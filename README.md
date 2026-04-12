@@ -1,1 +1,1 @@
-# kw-calendar
+# KW-Calendar

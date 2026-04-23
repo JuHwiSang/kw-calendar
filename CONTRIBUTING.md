@@ -148,7 +148,7 @@ test: CalendarService 단위 테스트 추가
 ### 포맷
 
 - [.editorconfig](.editorconfig)를 따릅니다.
-- 커밋 전 VS 자동 포맷(`Ctrl+K, Ctrl+D`)을 돌려주세요.
+- **커밋 전 반드시 `dotnet format`을 돌려주세요.** 안 돌리면 CI의 `Verify formatting` 단계에서 빌드가 실패합니다.
 
 ### WinForms 작업 규칙
 

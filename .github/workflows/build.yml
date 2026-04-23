@@ -70,4 +70,4 @@ jobs:
         run: deno lint supabase/functions/
 
       - name: Test
-        run: deno test --allow-all supabase/functions/
+        run: deno test --allow-all --config supabase/functions/deno.json supabase/functions/

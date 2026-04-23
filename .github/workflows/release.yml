@@ -30,7 +30,13 @@ jobs:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore KW-Calendar/KW-Calendar.csproj
+        run: dotnet restore KW-Calendar.slnx
+
+      - name: Build
+        run: dotnet build KW-Calendar.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test KW-Calendar.slnx -c Release --no-build --logger "trx" --results-directory TestResults
 
       - name: Publish (self-contained single-file)
         run: >
@@ -69,6 +75,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Lint
+        run: deno lint supabase/functions/
+
+      - name: Test
+        run: deno test --allow-all supabase/functions/
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1

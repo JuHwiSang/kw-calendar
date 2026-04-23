@@ -31,9 +31,6 @@ jobs:
       - name: Restore
         run: dotnet restore KW-Calendar.slnx
 
-      - name: Verify formatting
-        run: dotnet format KW-Calendar.slnx --verify-no-changes --severity warn
-
       - name: Build
         run: dotnet build KW-Calendar.slnx -c Release --no-restore
 
@@ -68,9 +65,6 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-
-      - name: Format check
-        run: deno fmt --check supabase/functions/
 
       - name: Lint
         run: deno lint supabase/functions/

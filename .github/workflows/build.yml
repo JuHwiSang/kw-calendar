@@ -51,7 +51,6 @@ jobs:
   edge-functions:
     name: Edge Functions quality
     runs-on: ubuntu-latest
-    if: hashFiles('supabase/functions/**/*.ts') != ''
     steps:
       - uses: actions/checkout@v4
 

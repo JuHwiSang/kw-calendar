@@ -148,7 +148,7 @@ test: CalendarService 단위 테스트 추가
 ### 포맷
 
 - [.editorconfig](.editorconfig)를 따릅니다. 에디터 auto-format on save를 켜두면 대부분 자동으로 맞춰집니다.
-- 필요 시 커밋 전 `dotnet format`으로 일괄 정리할 수 있습니다. CI에서 별도 포맷 검증은 하지 않습니다.
+- 필요 시 커밋 전 `dotnet format`으로 일괄 정리할 수 있습니다. CI에서 별도 포맷 정리는 해주지 않습니다.
 
 ### WinForms 작업 규칙
 

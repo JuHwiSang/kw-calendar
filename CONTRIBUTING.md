@@ -147,8 +147,8 @@ test: CalendarService 단위 테스트 추가
 
 ### 포맷
 
-- [.editorconfig](.editorconfig)를 따릅니다.
-- **커밋 전 반드시 `dotnet format`을 돌려주세요.** 안 돌리면 CI의 `Verify formatting` 단계에서 빌드가 실패합니다.
+- [.editorconfig](.editorconfig)를 따릅니다. 에디터 auto-format on save를 켜두면 대부분 자동으로 맞춰집니다.
+- 필요 시 커밋 전 `dotnet format`으로 일괄 정리할 수 있습니다. CI에서 별도 포맷 검증은 하지 않습니다.
 
 ### WinForms 작업 규칙
 
@@ -179,14 +179,19 @@ supabase migration new <migration_name>
 
 Edge Functions는 Deno / TypeScript로 작성합니다.
 
-- 포맷: `deno fmt`
-- 린트: `deno lint`
-- 테스트: `deno test` — **함수 수정 시 해당 함수의 `*_test.ts`를 추가/갱신**합니다.
+- 린트: `deno lint supabase/functions/`
+- 테스트: 함수 폴더 안에서 `deno test --allow-all`, 또는 상위에서 돌릴 땐 `deno test --allow-all --config supabase/functions/deno.json supabase/functions/`
 - 로컬 실행:
 
 ```bash
 supabase functions serve <function_name>
 ```
+
+#### Deno 설정 / 의존성
+
+- `deno.json`은 **`supabase/functions/deno.json` 한 개만** 사용합니다.
+- `supabase functions new <name>`을 돌리면 `supabase/functions/<name>/deno.json`이 자동 생성되는데, **생성 직후 삭제**하세요. 함수별 config를 두면 상위 디렉토리 단위 `deno test` / `deno lint`에서 config resolve가 꼬입니다.
+- 의존성 추가는 상위 `deno.json`이 있는 위치에서 `deno add jsr:<pkg>` / `deno add npm:<pkg>`를 돌리면 `imports`에 자동 반영됩니다.
 
 ---
 
@@ -194,7 +199,7 @@ supabase functions serve <function_name>
 
 빌드와 배포는 **GitHub Actions가 자동으로 처리**합니다. 워크플로우는 [.github/workflows/](.github/workflows/)에 3개:
 
-- [build.yml](.github/workflows/build.yml) — PR / `main` push 시 .NET build + test + `dotnet format` 검증. `supabase/functions/`에 변경이 있으면 `deno fmt / lint / test`도 돕니다.
+- [build.yml](.github/workflows/build.yml) — PR / `main` push 시 .NET build + test, 그리고 `supabase/functions/` 대상 `deno lint / test`를 돌립니다.
 - [auto-tag.yml](.github/workflows/auto-tag.yml) — `main` push 시 커밋 메시지 prefix 기반 자동 태깅 (`feat:` → minor, `fix:` → patch, `BREAKING CHANGE:` → major). Actions 탭에서 수동 bump도 가능.
 - [release.yml](.github/workflows/release.yml) — `v*.*.*` 태그 push 시 WinForms 앱 publish (self-contained + framework-dependent 두 ZIP) → GitHub Releases 업로드 + Supabase DB migration / Edge Functions 배포.
 

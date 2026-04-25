@@ -1,6 +1,6 @@
 # 태그(v*.*.*) push 시 실행:
 #   1) WinForms 앱을 self-contained / framework-dependent 두 종류로 publish → GitHub Release 업로드
-#   2) Supabase DB migration + Edge Functions 배포 (현재는 placeholder — Secrets 등록 후 주석 해제)
+#   2) Supabase DB migration + Edge Functions 배포
 #
 # 필요 Secrets/Variables:
 #   - SUPABASE_ACCESS_TOKEN (Secret) — Dashboard → Account → Access Tokens
@@ -94,19 +94,17 @@ jobs:
       - name: Placeholder
         run: echo "supabase deploy placeholder — enable the real steps below once secrets are set"
 
-      # --- Enable real deploy (주석 해제) ---
-      #
-      # - name: Link project
-      #   env:
-      #     SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      #   run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
-      #
-      # - name: Push database migrations
-      #   env:
-      #     SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      #   run: supabase db push
-      #
-      # - name: Deploy Edge Functions
-      #   env:
-      #     SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      #   run: supabase functions deploy
+      - name: Link project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
+      
+      - name: Push database migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase db push
+      
+      - name: Deploy Edge Functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy

@@ -54,20 +54,7 @@ supabase start      # 로컬 인스턴스 기동
 supabase db reset   # 마이그레이션 적용
 ```
 
-### 4. 시크릿 등록
-
-`KW-Calendar/appsettings.Development.json`을 생성하고 팀 내부 채널에서 공유한 값을 넣습니다.
-
-```json
-{
-  "Supabase": {
-    "Url": "<SUPABASE_URL>",
-    "AnonKey": "<SUPABASE_ANON_KEY>"
-  }
-}
-```
-
-### 5. 실행
+### 4. 실행
 
 VS에서 `F5`, 또는:
 
@@ -227,9 +214,9 @@ supabase functions serve <function_name>
 
 ### 시크릿 관리
 
-- API 키, 시크릿 등은 **절대 커밋하지 않습니다.**
-- C# 쪽은 `appsettings.Development.json` ([.gitignore](.gitignore)에 등록됨).
-- Supabase Edge Functions 쪽은 Supabase Dashboard의 **Secrets**에 등록, 로컬에서는 `supabase/functions/.env`(gitignore) 사용.
+- C# 클라이언트는 Supabase Anon Key(공개 키)만 사용하므로 `appsettings.json`을 그대로 커밋해도 됩니다.
+- Supabase Edge Functions 쪽 시크릿(LLM API Key 등)은 GitHub Secrets에 등록, 로컬에서는 `supabase/functions/.env`(gitignore) 사용.
+- 새 Supabase Edge Functions 시크릿 추가 시 [`.github/workflows/release.yml`](.github/workflows/release.yml)의 `supabase secrets set` 스텝에도 해당 시크릿을 추가합니다.
 
 ### 시스템 파일
 

@@ -379,7 +379,6 @@ Properties/launchSettings.json
 *.local.config
 *.localdb
 secrets.json
-appsettings.Development.json
 
 # JetBrains Rider / IntelliJ IDEA
 .idea/

@@ -39,10 +39,11 @@
 - UI 변경 태스크를 받으면: Form 자체의 코드 변경이 아닌 한 디자이너 편집이 필요하다는 점을 사용자에게 알리고, 필요하면 사용자에게 디자이너 조작을 요청하거나 최소한의 코드 편집만 제안한다.
 
 ### 시크릿 / 설정
-- `appsettings.Development.json`은 `.gitignore`에 있다 — **절대 커밋 금지**.
-- `appsettings.json`은 커밋되지만 시크릿 값은 `appsettings.Development.json`으로만 들어간다.
-- Edge Functions 시크릿은 `supabase/functions/.env`(gitignore) + Supabase Dashboard Secrets.
-- 새 시크릿을 코드에 하드코딩하지 않는다. 설정 키 형태(`Supabase:Url`, `Supabase:AnonKey` 등)로만 참조한다.
+- `appsettings.json`은 커밋된다. C# 클라이언트는 Anon Key(공개 키)만 사용하므로 시크릿이 없다.
+- 설정 값은 `appsettings.json`에 직접 채워 넣는다. 코드에 하드코딩하지 않는다.
+- 설정 키 형태(`Supabase:Url`, `Supabase:AnonKey` 등)로만 참조한다.
+- Edge Functions 시크릿은 GitHub Secrets에 등록, 로컬에서는 `supabase/functions/.env`(gitignore) 사용.
+- 새 Edge Functions 시크릿 추가 시 `.github/workflows/release.yml`의 `supabase secrets set` 스텝에도 해당 시크릿을 추가한다.
 
 ### 시스템 파일 수정 금지
 다음 파일은 작업 요구사항이 **명시적으로** 그 파일을 가리키지 않는 한 건드리지 않는다:

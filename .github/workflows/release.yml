@@ -108,3 +108,9 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: supabase functions deploy
+
+      # - name: Set Edge Functions secrets
+      #   env:
+      #     SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      #   run: |
+      #     supabase secrets set MY_API_KEY=${{ secrets.MY_API_KEY }}

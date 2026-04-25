@@ -1,16 +1,27 @@
+using Microsoft.Extensions.Configuration;
+
 namespace KW_Calendar
 {
     internal static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
+
+            IConfiguration config = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                .Build();
+
+            // TODO: 서비스 구현체 완성 후 수동 조립
+            // var localDb   = new LocalDbService(config);
+            // var sync      = new SyncService(config, localDb);
+            // var events    = new EventService(localDb);
+            // var cats      = new CategoryService(localDb);
+            // var notif     = new NotificationService(localDb);
+            // var presenter = new CalendarPresenter(view, events, cats, sync);
+
             Application.Run(new CalendarView());
         }
     }

@@ -1,8 +1,8 @@
 namespace KW_Calendar
 {
-    public partial class Form1 : Form
+    public partial class CalendarView : Form
     {
-        public Form1()
+        public CalendarView()
         {
             InitializeComponent();
         }

@@ -1,6 +1,6 @@
 ﻿namespace KW_Calendar
 {
-    partial class Form1
+    partial class CalendarView
     {
         /// <summary>
         ///  Required designer variable.

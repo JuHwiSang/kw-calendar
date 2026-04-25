@@ -106,12 +106,6 @@ test: CalendarService 단위 테스트 추가
 - **24시간 내** 아무도 리뷰하지 않으면 본인이 머지해도 됩니다.
 - 머지 방식은 **Squash merge**.
 
-리뷰를 권장하는 이유:
-
-- 코드 품질 향상
-- 팀원 간 코드 공유 / 학습 효과
-- 본인이 놓친 사이드 이펙트 발견
-
 ---
 
 ## C# / WinForms
@@ -122,8 +116,6 @@ test: CalendarService 단위 테스트 추가
 - **View**: WinForms `Form` / `UserControl`. UI 표시와 사용자 입력 전달만 담당. 비즈니스 로직 금지.
 - **Presenter**: View와 Service를 연결. View 이벤트를 받아 Service 호출, 결과를 View에 반영.
 - **Service**: 비즈니스 로직과 외부 의존성(Supabase 등). View를 모름. 테스트 대상.
-
-이렇게 나누는 이유는 (1) View와 로직 분리, (2) 계층화로 변경 영향 범위 축소, (3) Service 단위 테스트 가능.
 
 ### 네이밍
 
@@ -189,11 +181,6 @@ supabase functions serve <function_name>
 - [build.yml](.github/workflows/build.yml) — PR / `main` push 시 .NET build + test, 그리고 `supabase/functions/` 대상 `deno lint / test`를 돌립니다.
 - [auto-tag.yml](.github/workflows/auto-tag.yml) — `main` push 시 커밋 메시지 prefix 기반 자동 태깅 (`feat:` → minor, `fix:` → patch, `BREAKING CHANGE:` → major). Actions 탭에서 수동 bump도 가능.
 - [release.yml](.github/workflows/release.yml) — `v*.*.*` 태그 push 시 WinForms 앱 publish (self-contained + framework-dependent 두 ZIP) → GitHub Releases 업로드 + Supabase DB migration / Edge Functions 배포.
-
-로컬에서는:
-
-- C#: VS에서 `Ctrl+Shift+B` (빌드) / `F5` (실행)
-- Edge Functions: `supabase functions serve <function_name>`
 
 수동 배포(`supabase functions deploy`)는 CI 장애 등 비상시에만 사용합니다.
 

@@ -85,7 +85,11 @@ dotnet run --project KW-Calendar
 juhs2005/kw-12-add-login-form
 ```
 
-> (결정 필요) 한글 티켓명 깨짐 이슈는 회의에서 논의 필요
+티켓 이름이 한글인 경우 Linear의 "Copy branch name" 값에서 한글 부분을 영어로 번역하여 사용합니다.
+
+```
+juhs2005/kw-7-한글-티켓명  →  juhs2005/kw-7-korean-ticket-name
+```
 
 ### 3. 커밋 메시지
 

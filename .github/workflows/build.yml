@@ -1,0 +1,72 @@
+name: Build
+
+on:
+  pull_request:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dotnet:
+    name: .NET build & test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore KW-Calendar.slnx
+
+      - name: Build
+        run: dotnet build KW-Calendar.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test KW-Calendar.slnx -c Release --no-build --logger "trx" --results-directory TestResults
+
+      - name: Publish
+        run: dotnet publish KW-Calendar/KW-Calendar.csproj -c Release --no-build -o publish
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kw-calendar-build
+          path: publish/**
+          if-no-files-found: error
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/**/*.trx
+          if-no-files-found: ignore
+
+  edge-functions:
+    name: Edge Functions quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Lint
+        run: deno lint supabase/functions/
+
+      - name: Test
+        run: deno test --allow-all --config supabase/functions/deno.json supabase/functions/

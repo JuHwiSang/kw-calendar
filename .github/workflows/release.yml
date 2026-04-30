@@ -1,0 +1,116 @@
+# 태그(v*.*.*) push 시 실행:
+#   1) WinForms 앱을 self-contained / framework-dependent 두 종류로 publish → GitHub Release 업로드
+#   2) Supabase DB migration + Edge Functions 배포
+#
+# 필요 Secrets/Variables:
+#   - SUPABASE_ACCESS_TOKEN (Secret) — Dashboard → Account → Access Tokens
+#   - SUPABASE_PROJECT_ID   (Variable) — Project Settings → Reference ID
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-app:
+    name: Publish WinForms app
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore KW-Calendar.slnx
+
+      - name: Build
+        run: dotnet build KW-Calendar.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test KW-Calendar.slnx -c Release --no-build --logger "trx" --results-directory TestResults
+
+      - name: Publish (self-contained single-file)
+        run: >
+          dotnet publish KW-Calendar/KW-Calendar.csproj
+          -c Release -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o publish-sc
+
+      - name: Publish (framework-dependent)
+        run: >
+          dotnet publish KW-Calendar/KW-Calendar.csproj
+          -c Release -r win-x64
+          --self-contained false
+          -o publish-fd
+
+      - name: Package self-contained ZIP
+        shell: pwsh
+        run: Compress-Archive -Path publish-sc\* -DestinationPath KW-Calendar-${{ github.ref_name }}-win-x64-selfcontained.zip
+
+      - name: Package framework-dependent ZIP
+        shell: pwsh
+        run: Compress-Archive -Path publish-fd\* -DestinationPath KW-Calendar-${{ github.ref_name }}-win-x64-fx.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            KW-Calendar-${{ github.ref_name }}-win-x64-selfcontained.zip
+            KW-Calendar-${{ github.ref_name }}-win-x64-fx.zip
+
+  deploy-supabase:
+    name: Deploy to Supabase
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Lint
+        run: deno lint supabase/functions/
+
+      - name: Test
+        run: deno test --allow-all --config supabase/functions/deno.json supabase/functions/
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Placeholder
+        run: echo "supabase deploy placeholder — enable the real steps below once secrets are set"
+
+      - name: Link project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
+      
+      - name: Push database migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase db push
+      
+      - name: Deploy Edge Functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy
+
+      # - name: Set Edge Functions secrets
+      #   env:
+      #     SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      #   run: |
+      #     supabase secrets set MY_API_KEY=${{ secrets.MY_API_KEY }}

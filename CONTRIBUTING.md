@@ -180,17 +180,16 @@ supabase functions serve <function_name>
 
 ## 빌드 / CI
 
-빌드와 배포는 **GitHub Actions가 자동으로 처리**합니다. 워크플로우는 [.github/workflows/](.github/workflows/)에 3개:
+빌드와 배포는 **GitHub Actions가 자동으로 처리**합니다. 워크플로우는 [.github/workflows/](.github/workflows/)에 2개:
 
 - [build.yml](.github/workflows/build.yml) — PR / `main` push 시 .NET build + test, 그리고 `supabase/functions/` 대상 `deno lint / test`를 돌립니다.
-- [auto-tag.yml](.github/workflows/auto-tag.yml) — `main` push 시 커밋 메시지 prefix 기반 자동 태깅 (`feat:` → minor, `fix:` → patch, `BREAKING CHANGE:` → major). Actions 탭에서 수동 bump도 가능.
-- [release.yml](.github/workflows/release.yml) — `v*.*.*` 태그 push 시 WinForms 앱 publish (self-contained + framework-dependent 두 ZIP) → GitHub Releases 업로드 + Supabase DB migration / Edge Functions 배포.
+- [release.yml](.github/workflows/release.yml) — Actions 탭에서 수동으로 버전 bump 타입(patch/minor/major)을 선택해 실행 → 태그 생성 → WinForms 앱 publish (self-contained + framework-dependent 두 ZIP) → GitHub Releases 업로드 + Supabase DB migration / Edge Functions 배포.
 
 수동 배포(`supabase functions deploy`)는 CI 장애 등 비상시에만 사용합니다.
 
 ### CI에 등록해야 하는 Secrets / Variables
 
-`release.yml`의 Supabase 배포 step은 현재 placeholder 상태입니다. 실제 배포를 활성화하려면 레포 **Settings → Secrets and variables → Actions**에 아래를 등록한 뒤 `release.yml` 내 주석 처리된 step들을 해제합니다.
+`release.yml`의 Supabase 배포 step을 실행하려면 레포 **Settings → Secrets and variables → Actions**에 아래를 등록합니다.
 
 | 이름 | 종류 |
 |---|---|

@@ -1,3 +1,4 @@
+using KW_Calendar.Models;
 using KW_Calendar.Services;
 using KW_Calendar.Views;
 
@@ -96,23 +97,29 @@ public class CalendarPresenter
 
     private async Task LoadEventsForCurrentMonthAsync()
     {
-        // TODO: compute [start, end] window for displayed month (including leading/trailing grid cells),
-        // call _eventService.GetEventsByDateRangeAsync,
-        // filter by _showFavoritesOnly if set,
-        // group by DateOnly and assign to _view.EventsByDay.
+        var start  = _view.DisplayedMonth;
+        var end    = start.AddMonths(1).AddTicks(-1);
+        var events = await _eventService.GetEventsByDateRangeAsync(start, end);
+        _view.EventsByDay = events
+            .GroupBy(e => DateOnly.FromDateTime(e.StartDt))
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyList<Event>)g.OrderBy(e => e.StartDt).ToList());
     }
 
     private async Task LoadFavoritesAsync()
     {
-        // TODO: var events = await _eventService.GetFavoritedEventsAsync();
-        // var categories = await _categoryService.GetAllCategoriesAsync();
-        // _view.Events = events;
-        // _view.Categories = categories;
+        var evTask  = _eventService.GetFavoritedEventsAsync();
+        var catTask = _categoryService.GetAllCategoriesAsync();
+        await Task.WhenAll(evTask, catTask);
+        _view.Events      = evTask.Result;
+        _view.Categories  = catTask.Result;
     }
 
     private async Task OpenEventDetailAsync(int eventId)
     {
         // TODO: retrieve event, construct EventDetailPresenter + view, show detail panel/dialog.
+        await Task.CompletedTask;
     }
 
     private async Task SyncAndRefreshAsync()
@@ -120,9 +127,7 @@ public class CalendarPresenter
         if (_syncService.IsSyncing)
             return;
 
-        // _view.IsSyncing = true;  // TODO: 동기화 중 표시 (우선순위 낮음)
-        // TODO: await _syncService.SyncEventsAsync();
-        // await LoadAllAsync();
-        // _view.IsSyncing = false;
+        await _syncService.SyncEventsAsync();
+        await LoadAllAsync();
     }
 }

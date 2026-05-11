@@ -11,7 +11,7 @@ public class SyncService : ISyncService
     public SyncService(ISupabaseService supabase, ILocalDbService localDb)
     {
         _supabase = supabase;
-        _localDb  = localDb;
+        _localDb = localDb;
     }
 
     public async Task<int> SyncEventsAsync(CancellationToken ct = default)

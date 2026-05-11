@@ -12,7 +12,7 @@ public class CategoryServiceTests
     public CategoryServiceTests()
     {
         _localDb = Substitute.For<ILocalDbService>();
-        _sut     = new CategoryService(_localDb);
+        _sut = new CategoryService(_localDb);
     }
 
     [Fact]

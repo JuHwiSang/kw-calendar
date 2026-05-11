@@ -98,8 +98,8 @@ public class CalendarPresenter
     private async Task LoadEventsForCurrentMonthAsync()
     {
         // 현재 월 기준으로 앞뒤 1주일씩 여유 있게 이벤트를 불러와서 표시
-        var start  = _view.DisplayedMonth.AddDays(-7);
-        var end    = _view.DisplayedMonth.AddMonths(1).AddDays(7).AddTicks(-1);
+        var start = _view.DisplayedMonth.AddDays(-7);
+        var end = _view.DisplayedMonth.AddMonths(1).AddDays(7).AddTicks(-1);
         var events = await _eventService.GetEventsByDateRangeAsync(start, end);
         _view.EventsByDay = events
             .GroupBy(e => DateOnly.FromDateTime(e.StartDt))
@@ -110,11 +110,11 @@ public class CalendarPresenter
 
     private async Task LoadFavoritesAsync()
     {
-        var evTask  = _eventService.GetFavoritedEventsAsync();
+        var evTask = _eventService.GetFavoritedEventsAsync();
         var catTask = _categoryService.GetAllCategoriesAsync();
         await Task.WhenAll(evTask, catTask);
-        _view.Events      = evTask.Result;
-        _view.Categories  = catTask.Result;
+        _view.Events = evTask.Result;
+        _view.Categories = catTask.Result;
     }
 
     private async Task OpenEventDetailAsync(int eventId)

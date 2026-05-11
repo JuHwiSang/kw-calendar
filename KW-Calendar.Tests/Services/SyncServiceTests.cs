@@ -14,8 +14,8 @@ public class SyncServiceTests
     public SyncServiceTests()
     {
         _supabase = Substitute.For<ISupabaseService>();
-        _localDb  = Substitute.For<ILocalDbService>();
-        _sut      = new SyncService(_supabase, _localDb);
+        _localDb = Substitute.For<ILocalDbService>();
+        _sut = new SyncService(_supabase, _localDb);
 
         _supabase.FetchCategoriesAsync().Returns(new List<Category>());
         _supabase.FetchEventsAsync().Returns(new List<Event>());
@@ -56,7 +56,7 @@ public class SyncServiceTests
         _supabase.FetchCategoriesAsync(Arg.Any<CancellationToken>())
             .Returns(async _ => { await Task.Delay(200); return (IReadOnlyList<Category>)new List<Category>(); });
 
-        var first  = _sut.SyncEventsAsync();
+        var first = _sut.SyncEventsAsync();
         await Task.Delay(50);
 
         var second = await _sut.SyncEventsAsync();

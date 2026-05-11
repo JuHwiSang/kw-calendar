@@ -16,10 +16,10 @@ public class CalendarPresenterTests
 
     public CalendarPresenterTests()
     {
-        _view        = Substitute.For<ICalendarView>();
-        _eventSvc    = Substitute.For<IEventService>();
+        _view = Substitute.For<ICalendarView>();
+        _eventSvc = Substitute.For<IEventService>();
         _categorySvc = Substitute.For<ICategoryService>();
-        _syncSvc     = Substitute.For<ISyncService>();
+        _syncSvc = Substitute.For<ISyncService>();
 
         _view.DisplayedMonth.Returns(new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1));
 

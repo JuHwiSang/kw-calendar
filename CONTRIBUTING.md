@@ -195,6 +195,8 @@ supabase functions serve <function_name>
 |---|---|
 | `SUPABASE_ACCESS_TOKEN` | Secret |
 | `SUPABASE_PROJECT_ID` | Variable |
+| `IG_ACCESS_TOKEN` | Secret |
+| `IG_BUSINESS_ID` | Variable |
 
 `GITHUB_TOKEN`은 Actions가 자동 주입하므로 별도 등록은 필요 없습니다.
 

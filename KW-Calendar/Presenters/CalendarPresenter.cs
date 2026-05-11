@@ -97,8 +97,9 @@ public class CalendarPresenter
 
     private async Task LoadEventsForCurrentMonthAsync()
     {
-        var start  = _view.DisplayedMonth;
-        var end    = start.AddMonths(1).AddTicks(-1);
+        // 현재 월 기준으로 앞뒤 1주일씩 여유 있게 이벤트를 불러와서 표시
+        var start  = _view.DisplayedMonth.AddDays(-7);
+        var end    = _view.DisplayedMonth.AddMonths(1).AddDays(7).AddTicks(-1);
         var events = await _eventService.GetEventsByDateRangeAsync(start, end);
         _view.EventsByDay = events
             .GroupBy(e => DateOnly.FromDateTime(e.StartDt))

@@ -15,6 +15,9 @@ INSERT INTO categories (id, name) VALUES
 (7, '생활/복지/시설'),
 (8, '봉사');
 
+-- categories 테이블 시퀀스 동기화
+SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));
+
 -- source_items 테이블 생성
 CREATE TABLE source_items (
     id BIGSERIAL PRIMARY KEY,

@@ -12,7 +12,8 @@ Deno.test("linkedom should parse KW Notice structure", () => {
       </ul>
     </div>
   `
-  const { document } = parseHTML(html)
+  // deno-lint-ignore no-explicit-any
+  const { document } = parseHTML(html) as any
   const li = document.querySelector(".board-list-box ul li")
   const category = li?.querySelector(".category")?.textContent?.trim()
   const href = li?.querySelector("a")?.getAttribute("href")
@@ -31,7 +32,8 @@ Deno.test("linkedom should parse KW Academic structure", () => {
       </li>
     </ul>
   `
-  const { document } = parseHTML(html)
+  // deno-lint-ignore no-explicit-any
+  const { document } = parseHTML(html) as any
   const li = document.querySelector(".bachelor-calendar-list li")
   const date = li?.querySelector(".date")?.textContent?.trim()
   const content = li?.querySelector(".content")?.textContent?.trim()

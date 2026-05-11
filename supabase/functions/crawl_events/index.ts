@@ -6,6 +6,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "
 const IG_BUSINESS_ID = Deno.env.get("IG_BUSINESS_ID")
 const IG_ACCESS_TOKEN = Deno.env.get("IG_ACCESS_TOKEN")
 
+// ... (imports remain the same)
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 async function crawlAndSave() {
@@ -34,7 +35,8 @@ async function crawlAndSave() {
     const listUrl = `https://www.kw.ac.kr/ko/life/notice.jsp?cp=${page}`
     const response = await fetch(listUrl)
     const html = await response.text()
-    const { document } = parseHTML(html)
+    // deno-lint-ignore no-explicit-any
+    const { document } = parseHTML(html) as any
     const listItems = document.querySelectorAll(".board-list-box ul li")
 
     for (const li of listItems) {
@@ -53,7 +55,8 @@ async function crawlAndSave() {
         
         const detailRes = await fetch(detailUrl)
         const detailHtml = await detailRes.text()
-        const { document: detailDoc } = parseHTML(detailHtml)
+        // deno-lint-ignore no-explicit-any
+        const { document: detailDoc } = parseHTML(detailHtml) as any
         const contentArea = detailDoc.querySelector(".board-view-box") || detailDoc.querySelector(".board-view-content")
       
         await supabase.from("source_items").upsert({
@@ -90,7 +93,8 @@ async function crawlAndSave() {
         const calendarUrl = `https://www.kw.ac.kr/ko/life/bachelor_calendar.jsp?year=${year}&month=${month}`
         const response = await fetch(calendarUrl)
         const html = await response.text()
-        const { document } = parseHTML(html)
+        // deno-lint-ignore no-explicit-any
+        const { document } = parseHTML(html) as any
         const listItems = document.querySelectorAll(".bachelor-calendar-list li")
 
         for (const li of listItems) {
@@ -143,13 +147,15 @@ async function crawlAndSave() {
   console.log("All crawl tasks finished.")
 }
 
-Deno.serve(async (req) => {
+Deno.serve((req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 })
   }
 
-  if ((globalThis as any).EdgeRuntime?.waitUntil) {
-    (globalThis as any).EdgeRuntime.waitUntil(crawlAndSave())
+  // deno-lint-ignore no-explicit-any
+  const edgeRuntime = (globalThis as any).EdgeRuntime
+  if (edgeRuntime?.waitUntil) {
+    edgeRuntime.waitUntil(crawlAndSave())
   } else {
     crawlAndSave()
   }

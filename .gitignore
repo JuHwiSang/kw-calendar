@@ -386,3 +386,8 @@ secrets.json
 # Performance Profiling
 *.vsp
 *.vspx
+# Project instructions and secrets
+.gemini/
+GEMINI.md
+.env
+

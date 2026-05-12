@@ -1,3 +1,6 @@
+using KW_Calendar.Presenters;
+using KW_Calendar.Services;
+using KW_Calendar.Views;
 using Microsoft.Extensions.Configuration;
 
 namespace KW_Calendar
@@ -14,13 +17,19 @@ namespace KW_Calendar
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
                 .Build();
 
-            // TODO: 서비스 구현체 완성 후 수동 조립
-            // var localDb   = new LocalDbService(config);
-            // var sync      = new SyncService(config, localDb);
-            // var events    = new EventService(localDb);
-            // var cats      = new CategoryService(localDb);
-            // var notif     = new NotificationService(localDb);
+            var dbPath = Environment.ExpandEnvironmentVariables(config["LocalDb:Path"]!);
+            Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+
+            var localDb = new LocalDbService(dbPath);
+            var supabase = new SupabaseService(config);
+            var sync = new SyncService(supabase, localDb);
+            var events = new EventService(localDb);
+            var cats = new CategoryService(localDb);
+
+            // TODO: CalendarView가 ICalendarView를 구현하면 아래 주석 해제
+            // var view = new CalendarView();
             // var presenter = new CalendarPresenter(view, events, cats, sync);
+            // presenter.Initialize();
 
             Application.Run(new CalendarView());
         }

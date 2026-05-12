@@ -130,11 +130,11 @@ public class LocalDbServiceTests : IDisposable
 
     private static Event MakeEvent(int id, string title,
         DateTime? start = null, DateTime? end = null, int categoryId = 1) => new()
-    {
-        Id = id,
-        Title = title,
-        StartDt = start ?? new DateTime(2026, 5, 10),
-        EndDt = end ?? new DateTime(2026, 5, 11),
-        CategoryId = categoryId,
-    };
+        {
+            Id = id,
+            Title = title,
+            StartDt = start ?? new DateTime(2026, 5, 10),
+            EndDt = end ?? new DateTime(2026, 5, 11),
+            CategoryId = categoryId,
+        };
 }

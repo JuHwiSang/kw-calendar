@@ -3,6 +3,7 @@
   "specifiers": {
     "jsr:@std/assert@^1.0.19": "1.0.19",
     "jsr:@std/internal@^1.0.12": "1.0.12",
+    "jsr:@std/testing@^1.0.9": "1.0.18",
     "jsr:@supabase/functions-js@2": "2.104.1",
     "npm:linkedom@~0.18.5": "0.18.12"
   },
@@ -15,6 +16,12 @@
     },
     "@std/internal@1.0.12": {
       "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
+    },
+    "@std/testing@1.0.18": {
+      "integrity": "d3152f57b11666bf6358d0e127c7e3488e91178b0c2d8fbf0793e1c53cd13cb1",
+      "dependencies": [
+        "jsr:@std/assert"
+      ]
     },
     "@supabase/functions-js@2.104.1": {
       "integrity": "69d68f90f659f3b369edd6e5b1b0cb05790777caf66f3f60fbd56b2644a84a86"
@@ -106,6 +113,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/assert@^1.0.19",
+      "jsr:@std/testing@^1.0.9",
       "jsr:@supabase/functions-js@2",
       "jsr:@supabase/supabase-js@2",
       "npm:linkedom@~0.18.5"

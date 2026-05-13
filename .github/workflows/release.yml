@@ -112,6 +112,9 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Cache Deno dependencies
+        run: deno cache --config supabase/functions/deno.json supabase/functions/deno.lock
+
       - name: Lint
         run: deno lint supabase/functions/
 
@@ -141,5 +144,13 @@ jobs:
       - name: Set Edge Functions secrets
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SEC_URL: ${{ secrets.SUPABASE_URL }}
+          SEC_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VAR_IG_ID: ${{ vars.IG_BUSINESS_ID }}
+          SEC_IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
         run: |
-          supabase secrets set IG_BUSINESS_ID=${{ vars.IG_BUSINESS_ID }} IG_ACCESS_TOKEN=${{ secrets.IG_ACCESS_TOKEN }}
+          supabase secrets set \
+            SUPABASE_URL="$SEC_URL" \
+            SUPABASE_SERVICE_ROLE_KEY="$SEC_ROLE_KEY" \
+            IG_BUSINESS_ID="$VAR_IG_ID" \
+            IG_ACCESS_TOKEN="$SEC_IG_TOKEN"

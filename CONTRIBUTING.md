@@ -170,6 +170,14 @@ Edge Functions는 Deno / TypeScript로 작성합니다.
 supabase functions serve <function_name>
 ```
 
+#### 로컬 환경 변수 설정
+
+Edge Functions 로컬 개발 시 `supabase/` 디렉토리에 `.env` 파일을 생성하고 다음 변수를 입력합니다:
+- `SUPABASE_URL`: 로컬 API URL (기본값: `http://127.0.0.1:54321`)
+- `SUPABASE_SERVICE_ROLE_KEY`: 로컬 서비스 역할 키 (`supabase status` 명령으로 확인 가능)
+- `IG_BUSINESS_ID`: Instagram Business ID
+- `IG_ACCESS_TOKEN`: Instagram Graph API Access Token
+
 #### Deno 설정 / 의존성
 
 - `deno.json`은 **`supabase/functions/deno.json` 한 개만** 사용합니다.

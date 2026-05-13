@@ -34,8 +34,8 @@ Deno.test("KW Academic: date normalization for ID", () => {
   const cases = [
     { input: "05.11 (월)", expected: "0511" },
     { input: "12.25", expected: "1225" },
-    { input: "1.1", expected: "11" }, // basic regex might need padding if 1.1 becomes 11
-    { input: "2026.05.11", expected: "0511" } // takes first two pairs
+    { input: "1.1", expected: "0101" },
+    { input: "01.01", expected: "0101" }
   ]
 
   for (const { input, expected } of cases) {
@@ -44,9 +44,7 @@ Deno.test("KW Academic: date normalization for ID", () => {
       ? `${dateMatch[1].padStart(2, "0")}${dateMatch[2].padStart(2, "0")}` 
       : input.replace(/[^0-9]/g, "")
     
-    // Note: I should update the source code to use padStart for better consistency
-    // But for now, let's see what the current source does: 
-    // const normalizedDate = dateMatch ? `${dateMatch[1]}${dateMatch[2]}` : dateText.replace(/[^0-9]/g, "")
+    assertEquals(normalized.substring(0, 4), expected)
   }
 })
 

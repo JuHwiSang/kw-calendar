@@ -12,7 +12,6 @@ async function crawlAndSave() {
       .limit(1)
     const lastItems = data as { crawled_at: string }[] | null
 
-    /*
     if (lastItems?.[0]) {
       const diffMs = Date.now() - new Date(lastItems[0].crawled_at).getTime()
       if (diffMs < 3600000) {
@@ -20,7 +19,6 @@ async function crawlAndSave() {
         return
       }
     }
-    */
   } catch (throttleError) {
     console.error("Error checking throttle, proceeding anyway:", throttleError)
   }

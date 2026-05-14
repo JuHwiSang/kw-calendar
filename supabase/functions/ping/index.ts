@@ -1,8 +1,4 @@
 import "@supabase/functions-js"
+import { handler } from "./handler.ts"
 
-Deno.serve(() => {
-  return new Response(
-    JSON.stringify({ message: "pong" }),
-    { headers: { "Content-Type": "application/json" } },
-  )
-})
+Deno.serve(handler)

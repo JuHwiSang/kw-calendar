@@ -408,12 +408,11 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 [functions.ping]
 enabled = true
 verify_jwt = false
-import_map = "./functions/ping/deno.json"
+import_map = "./functions/deno.json"
 entrypoint = "./functions/ping/index.ts"
 
 [functions.crawl_events]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/deno.json"
 entrypoint = "./functions/crawl_events/index.ts"
-timeout = 300

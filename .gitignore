@@ -389,5 +389,11 @@ secrets.json
 # Project instructions and secrets
 .gemini/
 GEMINI.md
+.claude/
+CLAUDE.md
 .env
+
+# Temporary crawling test files
+calendar.html
+notice.html
 

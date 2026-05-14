@@ -189,11 +189,11 @@ export async function crawlInstagramAccount(
   igAccessToken: string,
 ) {
   const mediaFields = "id,caption,media_url,permalink,timestamp,media_type"
-  const fields = `business_discovery.username('${username}'){media.limit(50){${mediaFields}}}`
+  const fields = `business_discovery.username(${username}){media.limit(50){${mediaFields}}}`
   const baseUrl = `https://graph.facebook.com/v25.0/${igBusinessId}`
 
-  let nextUrl: string | null =
-    `${baseUrl}?fields=${encodeURIComponent(fields)}&access_token=${igAccessToken}`
+  const params = new URLSearchParams({ fields, access_token: igAccessToken })
+  let nextUrl: string | null = `${baseUrl}?${params}`
 
   let newItemsCount = 0
   let pageCount = 0

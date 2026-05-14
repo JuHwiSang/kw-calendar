@@ -38,7 +38,14 @@ public class EventDetailPresenter
             (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
             return;
 
-        Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+        try
+        {
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+        }
+        catch (Exception)
+        {
+            // 브라우저 실행 실패 시 무시
+        }
     }
 
     private void OnViewClosed(object? sender, EventArgs e)

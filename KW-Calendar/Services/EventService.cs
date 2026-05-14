@@ -16,6 +16,7 @@ public class EventService : IEventService
 
     public async Task<Event> ToggleFavoriteAsync(int eventId, CancellationToken ct = default)
     {
+        // TODO: Toggle이 Event를 리턴하게 하면 추가 조회 필요 없음.
         await _localDb.ToggleEventFavoriteAsync(eventId, ct);
         var ev = await _localDb.GetEventByIdAsync(eventId, ct);
         return ev ?? throw new InvalidOperationException($"Event {eventId} not found after toggle.");

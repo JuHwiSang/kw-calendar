@@ -30,14 +30,23 @@ public class LocalDbService : ILocalDbService, IDisposable
 
     public async Task UpsertEventsAsync(IEnumerable<Event> events, CancellationToken ct = default)
     {
-        foreach (var ev in events)
+        var eventList = events.ToList();
+        var existingMap = new Dictionary<int, EventRow>();
+
+        // SQLite IN (...) 파라미터 최대 999개 제한
+        foreach (var chunk in eventList.Chunk(999))
         {
-            var existing = await _db.Events.FindAsync([ev.Id], ct);
-            if (existing is null)
-            {
-                _db.Events.Add(EventRow.FromEvent(ev));
-            }
-            else
+            var chunkIds = chunk.Select(e => e.Id).ToList();
+            var rows = await _db.Events
+                .Where(r => chunkIds.Contains(r.Id))
+                .ToListAsync(ct);
+            foreach (var row in rows)
+                existingMap[row.Id] = row;
+        }
+
+        foreach (var ev in eventList)
+        {
+            if (existingMap.TryGetValue(ev.Id, out var existing))
             {
                 existing.Title = ev.Title;
                 existing.Body = ev.Body;
@@ -48,6 +57,10 @@ public class LocalDbService : ILocalDbService, IDisposable
                 existing.ExternalLink = ev.ExternalLink;
                 existing.CategoryId = ev.CategoryId;
                 // IsFavorited 보존
+            }
+            else
+            {
+                _db.Events.Add(EventRow.FromEvent(ev));
             }
         }
         await _db.SaveChangesAsync(ct);
@@ -88,6 +101,7 @@ public class LocalDbService : ILocalDbService, IDisposable
     {
         foreach (var cat in categories)
         {
+            // 카테고리는 Event와 달리 대량 주입 상황이 많지 않을 것 같아서 단일 조회 후 업데이트/삽입하는 방식으로 구현.
             var existing = await _db.Categories.FindAsync([cat.Id], ct);
             if (existing is null)
             {

@@ -33,7 +33,7 @@ jobs:
     outputs:
       new_tag: ${{ steps.tag.outputs.new_tag }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -51,10 +51,10 @@ jobs:
     needs: tag
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
 
@@ -105,12 +105,18 @@ jobs:
     needs: tag
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+
+      - name: Cache Deno dependencies
+        run: deno install --frozen --config supabase/functions/deno.json
+
+      - name: Type check
+        run: deno check --config supabase/functions/deno.json supabase/functions/crawl_events/index.ts supabase/functions/crawl_events/crawlers.ts supabase/functions/crawl_events/index.test.ts
 
       - name: Lint
         run: deno lint supabase/functions/
@@ -138,8 +144,12 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: supabase functions deploy
 
-      # - name: Set Edge Functions secrets
-      #   env:
-      #     SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      #   run: |
-      #     supabase secrets set MY_API_KEY=${{ secrets.MY_API_KEY }}
+      - name: Set Edge Functions secrets
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          VAR_IG_ID: ${{ vars.IG_BUSINESS_ID }}
+          SEC_IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: |
+          supabase secrets set \
+            IG_BUSINESS_ID="$VAR_IG_ID" \
+            IG_ACCESS_TOKEN="$SEC_IG_TOKEN"

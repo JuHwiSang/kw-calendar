@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using KW_Calendar.Models;
 using KW_Calendar.Services;
 using KW_Calendar.Views;
 
@@ -28,7 +30,22 @@ public class EventDetailPresenter
 
     private void OnOpenExternalLinkRequested(object? sender, EventArgs e)
     {
-        // TODO: open _view.CurrentEvent?.ExternalLink in the default browser.
+        var link = _view.CurrentEvent?.ExternalLink;
+        if (string.IsNullOrEmpty(link))
+            return;
+
+        if (!Uri.TryCreate(link, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
+            return;
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+        }
+        catch (Exception)
+        {
+            // 브라우저 실행 실패 시 무시
+        }
     }
 
     private void OnViewClosed(object? sender, EventArgs e)
@@ -41,15 +58,15 @@ public class EventDetailPresenter
 
     private async Task LoadEventAsync(int eventId)
     {
-        // TODO: var ev = await _eventService.GetEventByIdAsync(eventId);
-        // _view.CurrentEvent = ev;
-        // _view.IsFavorited = ev?.IsFavorited ?? false;
+        var ev = await _eventService.GetEventByIdAsync(eventId);
+        _view.CurrentEvent = ev ?? new Event();
+        _view.IsFavorited = ev?.IsFavorited ?? false;
     }
 
     private async Task ToggleFavoriteAsync(int eventId)
     {
-        // TODO: var updated = await _eventService.ToggleFavoriteAsync(eventId);
-        // _view.IsFavorited = updated.IsFavorited;
-        // _view.CurrentEvent = updated;
+        var updated = await _eventService.ToggleFavoriteAsync(eventId);
+        _view.IsFavorited = updated.IsFavorited;
+        _view.CurrentEvent = updated;
     }
 }

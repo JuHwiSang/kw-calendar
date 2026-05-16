@@ -7,6 +7,7 @@
 # 필요 Secrets / Variables (Settings → Secrets and variables → Actions):
 #   - SUPABASE_ACCESS_TOKEN (Secret)   — Dashboard → Account → Access Tokens
 #   - SUPABASE_PROJECT_ID   (Variable) — Project Settings → Reference ID
+#   - GEMINI_API_KEY        (Secret)   — Gemini API Key
 
 name: Release
 
@@ -149,7 +150,9 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           VAR_IG_ID: ${{ vars.IG_BUSINESS_ID }}
           SEC_IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          SEC_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           supabase secrets set \
             IG_BUSINESS_ID="$VAR_IG_ID" \
-            IG_ACCESS_TOKEN="$SEC_IG_TOKEN"
+            IG_ACCESS_TOKEN="$SEC_IG_TOKEN" \
+            GEMINI_API_KEY="$SEC_GEMINI_API_KEY"

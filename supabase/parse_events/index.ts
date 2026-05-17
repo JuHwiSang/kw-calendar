@@ -1,11 +1,14 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { insertEvents, getPendingSourceItems, findExistingEventsForDuplicateCheck, markSourceItemFailed, markSourceItemParsed } from "./db.ts"
+import {
+    findExistingEventsForDuplicateCheck,
+    getPendingSourceItems,
+    insertEvents,
+    markSourceItemFailed,
+    markSourceItemParsed,
+} from "./db.ts"
 import { filterDuplicateEvents } from "./duplicate.ts"
 import { parseEventsWithLlm } from "./llm.ts"
 import { toEventInsertRows } from "./parser.ts"
-import type { ParseEventsRequest } from "./types.ts"
-
-
 
 Deno.serve(async (req) => {
     try {
@@ -28,15 +31,19 @@ Deno.serve(async (req) => {
             })
 
             try {
-                const llmEvents = await parseEventsWithLlm(sourceItem.raw_content, sourceItem.id)
+                const llmEvents = await parseEventsWithLlm(sourceItem)
                 console.log("[LLM_EVENTS]", llmEvents)
 
                 const insertRows = toEventInsertRows(llmEvents)
                 console.log("[EVENT_INSERT_ROWS]", insertRows)
 
-                const existingEvents = await findExistingEventsForDuplicateCheck(insertRows)
+                const existingEvents =
+                    await findExistingEventsForDuplicateCheck(insertRows)
 
-                const deduplicatedRows = filterDuplicateEvents(insertRows, existingEvents)
+                const deduplicatedRows = filterDuplicateEvents(
+                    insertRows,
+                    existingEvents,
+                )
                 console.log("[DEDUPLICATED_INSERT_ROWS]", deduplicatedRows)
 
                 const insertedEvents = await insertEvents(deduplicatedRows)
@@ -103,3 +110,5 @@ Deno.serve(async (req) => {
         )
     }
 })
+// TODO: If parse_events timeout becomes an issue, switch to a background
+// processing flow using EdgeRuntime.waitUntil and return immediately.

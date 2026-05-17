@@ -393,6 +393,10 @@ GEMINI.md
 CLAUDE.md
 .env
 
+# Supabase local environment files
+supabase/.env
+supabase/functions/.env
+
 # Temporary crawling test files
 calendar.html
 notice.html

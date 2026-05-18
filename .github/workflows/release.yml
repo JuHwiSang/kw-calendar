@@ -6,7 +6,10 @@
 #
 # 필요 Secrets / Variables (Settings → Secrets and variables → Actions):
 #   - SUPABASE_ACCESS_TOKEN (Secret)   — Dashboard → Account → Access Tokens
-#   - SUPABASE_PROJECT_ID   (Variable) — Project Settings → Reference ID
+#   - SUPABASE_PROJECT_ID   (Variable) — Project Settings → Reference ID 
+#   - IG_ACCESS_TOKEN       (Secret)   — Instagram GRAPH API Access Token
+#   - IG_BUSINESS_ID        (Variable) — Instagram Business ID
+
 
 name: Release
 

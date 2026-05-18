@@ -10,7 +10,7 @@ export type EventCategory =
     | "CAREER"
     | "FINANCE"
     | "ACTIVITY"
-    | "PERSONAL"
+    | "MILITARY"
     | "OTHER"
 
 export interface SourceItem {
@@ -73,6 +73,6 @@ export const CategoryIdMap: Record<EventCategory, number> = {
     FINANCE: 3,
     CAREER: 4,
     ACTIVITY: 6,
-    PERSONAL: 6,
+    MILITARY: 7,
     OTHER: 7,
 }

@@ -23,6 +23,7 @@ CAREER    : 취업/채용/진로 — 채용, 인턴, 취업박람회, 창업
 FINANCE   : 장학금/등록금/지원금
 ACTIVITY  : 동아리/학생회/비교과/교내 모집
 OTHER     : 분류 불가, 단순 안내, 시설/운영 공지, 정보 부족
+MILITARY  : 병무 — 예비군, 병역, 입영, 군휴학, 군복학, 병무청 관련 일정
 
 ## Extraction Rules
 1. Extract all distinct event candidates.
@@ -83,11 +84,11 @@ Rules:
 - If the item should not be inserted into events, set should_register=false.
 - If confidence is lower than 0.75, set needs_review=true.
 - If the notice is useful only as reference but not as a calendar event, set category=OTHER and should_register=false.
-
-TODO:
-- Refine category policy after QA with real Kwangwoon University notice samples.
-- Refine handling of facility/operation notices, result announcements, external recruitment, and administrative deadlines.
 `
+//TODO:
+//- Refine category policy after QA with real Kwangwoon University notice samples.
+//- Refine handling of facility/operation notices, result announcements, external recruitment, and administrative deadlines.
+//
 export function buildParseEventsUserPrompt(input: {
     id: number
     source_type: string

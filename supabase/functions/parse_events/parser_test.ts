@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert"
+import { assertEquals } from "@std/assert"
 import { toEventInsertRows } from "./parser.ts"
 import type { LlmParsedEvent } from "./types.ts"
 

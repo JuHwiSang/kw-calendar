@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert"
+import { assertEquals } from "@std/assert"
 import { filterDuplicateEvents } from "./duplicate.ts"
 import type { EventInsertRow } from "./types.ts"
 

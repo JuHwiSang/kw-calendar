@@ -1,0 +1,76 @@
+# Actions 탭에서 수동 실행: 최신 태그를 자동 조회 → 해당 커밋에서 WinForms 앱 빌드/테스트
+#   → self-contained + framework-dependent ZIP → GitHub Releases 업로드.
+#
+# auto-tag 워크플로우가 최소 한 번 실행되어 태그가 존재해야 한다.
+
+name: WinForm Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-app:
+    name: Publish WinForms app
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolve latest tag
+        id: latest
+        shell: bash
+        run: echo "tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tag
+        run: git checkout ${{ steps.latest.outputs.tag }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore KW-Calendar.slnx
+
+      - name: Build
+        run: dotnet build KW-Calendar.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test KW-Calendar.slnx -c Release --no-build --logger "trx" --results-directory TestResults
+
+      - name: Publish (self-contained single-file)
+        run: >
+          dotnet publish KW-Calendar/KW-Calendar.csproj
+          -c Release -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o publish-sc
+
+      - name: Publish (framework-dependent)
+        run: >
+          dotnet publish KW-Calendar/KW-Calendar.csproj
+          -c Release -r win-x64
+          --self-contained false
+          -o publish-fd
+
+      - name: Package self-contained ZIP
+        shell: pwsh
+        run: Compress-Archive -Path publish-sc\* -DestinationPath KW-Calendar-${{ steps.latest.outputs.tag }}-win-x64-selfcontained.zip
+
+      - name: Package framework-dependent ZIP
+        shell: pwsh
+        run: Compress-Archive -Path publish-fd\* -DestinationPath KW-Calendar-${{ steps.latest.outputs.tag }}-win-x64-fx.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.latest.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            KW-Calendar-${{ steps.latest.outputs.tag }}-win-x64-selfcontained.zip
+            KW-Calendar-${{ steps.latest.outputs.tag }}-win-x64-fx.zip

@@ -1,0 +1,85 @@
+# Actions 탭에서 수동 실행: 최신 태그 커밋 기준으로 Supabase DB migration push +
+#   Edge Functions 배포 + secrets 설정.
+#
+# auto-tag 워크플로우가 최소 한 번 실행되어 태그가 존재해야 한다.
+#
+# 필요 Secrets / Variables (Settings → Secrets and variables → Actions):
+#   - SUPABASE_ACCESS_TOKEN (Secret)   — Dashboard → Account → Access Tokens
+#   - GEMINI_API_KEY        (Secret)   — Gemini API Key
+#   - SUPABASE_PROJECT_ID   (Variable) — Project Settings → Reference ID
+#   - IG_ACCESS_TOKEN       (Secret)   — Instagram GRAPH API Access Token
+#   - IG_BUSINESS_ID        (Variable) — Instagram Business ID
+
+name: Supabase Deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-supabase:
+    name: Deploy to Supabase
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolve latest tag
+        id: latest
+        shell: bash
+        run: echo "tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tag
+        run: git checkout ${{ steps.latest.outputs.tag }}
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Cache Deno dependencies
+        run: deno install --frozen --config supabase/functions/deno.json
+
+      - name: Type check
+        run: deno check --config supabase/functions/deno.json supabase/functions/crawl_events/index.ts supabase/functions/crawl_events/crawlers.ts supabase/functions/crawl_events/index.test.ts
+
+      - name: Lint
+        run: deno lint supabase/functions/
+
+      - name: Test
+        run: deno test --allow-all --config supabase/functions/deno.json supabase/functions/
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+
+      - name: Link project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
+
+      - name: Push database migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase db push
+
+      - name: Deploy Edge Functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy
+
+      - name: Set Edge Functions secrets
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          VAR_IG_ID: ${{ vars.IG_BUSINESS_ID }}
+          SEC_IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          SEC_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          supabase secrets set \
+            IG_BUSINESS_ID="$VAR_IG_ID" \
+            IG_ACCESS_TOKEN="$SEC_IG_TOKEN" \
+            GEMINI_API_KEY="$SEC_GEMINI_API_KEY"

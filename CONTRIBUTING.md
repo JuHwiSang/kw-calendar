@@ -201,16 +201,20 @@ GEMINI_API_KEY=your_gemini_api_key
 
 ## 빌드 / CI
 
-빌드와 배포는 **GitHub Actions가 자동으로 처리**합니다. 워크플로우는 [.github/workflows/](.github/workflows/)에 2개:
+빌드와 배포는 **GitHub Actions가 자동으로 처리**합니다. 워크플로우는 [.github/workflows/](.github/workflows/)에 4개:
 
-- [build.yml](.github/workflows/build.yml) — PR / `main` push 시 .NET build + test, 그리고 `supabase/functions/` 대상 `deno lint / test`를 돌립니다.
-- [release.yml](.github/workflows/release.yml) — Actions 탭에서 수동으로 버전 bump 타입(patch/minor/major)을 선택해 실행 → 태그 생성 → WinForms 앱 publish (self-contained + framework-dependent 두 ZIP) → GitHub Releases 업로드 + Supabase DB migration / Edge Functions 배포.
+- [build.yml](.github/workflows/build.yml) — PR 시 .NET build + test, `supabase/functions/` 대상 `deno lint / test`.
+- [auto-tag.yml](.github/workflows/auto-tag.yml) — Actions 탭에서 수동 실행. bump 타입(patch/minor/major)을 선택하면 `main`에서만 새 버전 태그 생성.
+- [winform-release.yml](.github/workflows/winform-release.yml) — Actions 탭에서 수동 실행. **최신 태그**를 자동으로 찾아 그 커밋에서 WinForms 앱 publish (self-contained + framework-dependent 두 ZIP) → GitHub Releases 업로드.
+- [supabase-deploy.yml](.github/workflows/supabase-deploy.yml) — Actions 탭에서 수동 실행. **최신 태그** 커밋 기준으로 Supabase DB migration push + Edge Functions 배포.
+
+릴리즈 dispatch 순서: `auto-tag` → `winform-release` → `supabase-deploy`.
 
 수동 배포(`supabase functions deploy`)는 CI 장애 등 비상시에만 사용합니다.
 
 ### CI에 등록해야 하는 Secrets / Variables
 
-`release.yml`의 Supabase 배포 step을 실행하려면 레포 **Settings → Secrets and variables → Actions**에 아래를 등록합니다.
+`supabase-deploy.yml`의 배포 step을 실행하려면 레포 **Settings → Secrets and variables → Actions**에 아래를 등록합니다.
 
 | 이름 | 종류 |
 |---|---|
@@ -230,7 +234,7 @@ GEMINI_API_KEY=your_gemini_api_key
 
 - C# 클라이언트는 Supabase Anon Key(공개 키)만 사용하므로 `appsettings.json`을 그대로 커밋해도 됩니다.
 - Supabase Edge Functions 쪽 시크릿(LLM API Key 등)은 GitHub Secrets에 등록, 로컬에서는 `supabase/functions/.env`(gitignore) 사용.
-- 새 Supabase Edge Functions 시크릿 추가 시 [`.github/workflows/release.yml`](.github/workflows/release.yml)의 `supabase secrets set` 스텝에도 해당 시크릿을 추가합니다.
+- 새 Supabase Edge Functions 시크릿 추가 시 [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)의 `supabase secrets set` 스텝에도 해당 시크릿을 추가합니다.
 
 ### 시스템 파일
 

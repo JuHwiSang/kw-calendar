@@ -1,0 +1,39 @@
+# Actions 탭에서 수동 실행: 버전 bump 타입(patch/minor/major) 선택 → 태그 생성
+#
+# main 브랜치에서만 동작하며 (mathieudutour/github-tag-action의 release_branches 옵션),
+# 다른 ref에서 dispatch되면 태그를 만들지 않고 no-op으로 끝난다.
+
+name: Auto Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    name: Create version tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Bump version and push tag
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: main
+          default_bump: ${{ github.event.inputs.bump }}
+          tag_prefix: "v"

@@ -202,7 +202,6 @@ namespace KW_Calendar.Views
                 var cp = base.CreateParams;
                 cp.ExStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
                 cp.Style &= ~WS_MINIMIZEBOX;
-                WindowDebugLog.Log($"CreateParams Style=0x{cp.Style:X8} ExStyle=0x{cp.ExStyle:X8}");
                 return cp;
             }
         }
@@ -210,20 +209,17 @@ namespace KW_Calendar.Views
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            WindowDebugLog.Log($"OnHandleCreated hwnd=0x{Handle.ToInt64():X}");
             DesktopAnchor.Anchor(Handle);
             ApplyRoundedRegion();
         }
 
         protected override void OnVisibleChanged(EventArgs e)
         {
-            WindowDebugLog.Log($"OnVisibleChanged Visible={Visible} WindowState={WindowState}");
             base.OnVisibleChanged(e);
         }
 
         protected override void OnShown(EventArgs e)
         {
-            WindowDebugLog.Log($"OnShown Visible={Visible} WindowState={WindowState}");
             base.OnShown(e);
         }
 
@@ -248,38 +244,25 @@ namespace KW_Calendar.Views
 
         protected override void WndProc(ref Message m)
         {
-            // === 진단 모드: 차단 로직 다 풀고 관찰만 한다 ===
-            // Win+D 시 어떤 메시지가 어떤 순서/플래그로 오는지 파악하기 위함.
             switch (m.Msg)
             {
                 case DesktopAnchor.WM_WINDOWPOSCHANGING:
                 case 0x0047: // WM_WINDOWPOSCHANGED
                 {
                     var pos = Marshal.PtrToStructure<DesktopAnchor.WINDOWPOS>(m.LParam);
-                    WindowDebugLog.Log(
-                        $"{WindowDebugLog.MsgName(m.Msg)} flags=[{WindowDebugLog.PosFlags(pos.flags)}] " +
-                        $"insertAfter=0x{pos.hwndInsertAfter.ToInt64():X} " +
-                        $"xy=({pos.x},{pos.y}) wh=({pos.cx},{pos.cy}) " +
-                        $"Visible={Visible} WindowState={WindowState}");
                     break;
                 }
                 case 0x0018: // WM_SHOWWINDOW
-                    WindowDebugLog.Log($"WM_SHOWWINDOW shown={m.WParam.ToInt32()} reason=0x{m.LParam.ToInt32():X}");
                     break;
                 case 0x001C: // WM_ACTIVATEAPP
-                    WindowDebugLog.Log($"WM_ACTIVATEAPP active={m.WParam.ToInt32()} otherThread=0x{m.LParam.ToInt64():X}");
                     break;
                 case 0x0006: // WM_ACTIVATE
-                    WindowDebugLog.Log($"WM_ACTIVATE wParam=0x{m.WParam.ToInt32():X}");
                     break;
                 case 0x0086: // WM_NCACTIVATE
-                    WindowDebugLog.Log($"WM_NCACTIVATE active={m.WParam.ToInt32()}");
                     break;
                 case 0x0005: // WM_SIZE
-                    WindowDebugLog.Log($"WM_SIZE type={m.WParam.ToInt32()} ({(m.WParam.ToInt32() == 1 ? "MINIMIZED" : m.WParam.ToInt32() == 2 ? "MAXIMIZED" : "RESTORED")})");
                     break;
                 case 0x0112: // WM_SYSCOMMAND
-                    WindowDebugLog.Log($"WM_SYSCOMMAND cmd=0x{(m.WParam.ToInt32() & 0xFFF0):X}");
                     break;
             }
 

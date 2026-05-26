@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    font-family: "Segoe UI", sans-serif; font-size: 13px;
+    background: rgba(30, 30, 40, 0.92); color: #eee;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+  body { padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+  .titlebar {
+    display: flex; justify-content: flex-end; align-items: center;
+    height: 18px; margin-bottom: -4px;
+  }
+  .drag-area {
+    flex: 1; height: 100%; cursor: move;
+  }
+  .close-btn {
+    width: 22px; height: 18px;
+    background: transparent; color: #aaa; border: none;
+    cursor: pointer; font-size: 14px; line-height: 1;
+    border-radius: 3px;
+  }
+  .close-btn:hover { background: #c0392b; color: #fff; }
+  .header { display: flex; align-items: center; justify-content: space-between; }
+  .header button {
+    background: #444; color: #eee; border: none; width: 30px; height: 26px;
+    border-radius: 4px; cursor: pointer; font-size: 14px;
+  }
+  .header button:hover { background: #555; }
+  .month-label { font-size: 15px; font-weight: bold; }
+  .section-label {
+    font-size: 11px; font-weight: bold; color: #aaa;
+    margin-top: 4px; padding-bottom: 2px; border-bottom: 1px solid #555;
+  }
+  .list { flex: 1; overflow-y: auto; min-height: 40px; }
+  .events-list { flex: 2; }
+  .item {
+    padding: 4px 6px; margin: 2px 0; border-radius: 3px;
+    cursor: pointer; user-select: none;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .item:hover { background: rgba(255,255,255,0.1); }
+  .item .date { color: #8cf; margin-right: 6px; }
+  .item .star { color: #ffcc44; cursor: pointer; margin-right: 4px; }
+  .empty { color: #777; font-style: italic; padding: 4px 6px; }
+  /* WebView 스크롤바 단순화 */
+  .list::-webkit-scrollbar { width: 6px; }
+  .list::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+</style>
+</head>
+<body>
+  <div class="titlebar">
+    <div class="drag-area" id="drag-area"></div>
+    <button class="close-btn" id="close-btn" title="닫기">✕</button>
+  </div>
+
+  <div class="header">
+    <button id="prev-btn">&lt;</button>
+    <div class="month-label" id="month-label">----</div>
+    <button id="next-btn">&gt;</button>
+  </div>
+
+  <div class="section-label">이번 달 이벤트</div>
+  <div class="list events-list" id="events-list">
+    <div class="empty">로딩 중...</div>
+  </div>
+
+  <div class="section-label">즐겨찾기 이벤트</div>
+  <div class="list" id="fav-events-list">
+    <div class="empty">없음</div>
+  </div>
+
+  <div class="section-label">즐겨찾기 카테고리</div>
+  <div class="list" id="fav-categories-list">
+    <div class="empty">없음</div>
+  </div>
+
+<script>
+  const post = (msg) => window.chrome?.webview?.postMessage(msg);
+
+  document.getElementById('prev-btn').addEventListener('click',
+    () => post({ type: 'prevMonth' }));
+  document.getElementById('next-btn').addEventListener('click',
+    () => post({ type: 'nextMonth' }));
+  document.getElementById('close-btn').addEventListener('click',
+    () => post({ type: 'close' }));
+  document.getElementById('drag-area').addEventListener('mousedown',
+    (e) => { if (e.button === 0) post({ type: 'beginDrag' }); });
+
+  function setMonth(monthText) {
+    document.getElementById('month-label').textContent = monthText;
+  }
+
+  // events: [{id, title, startDt}]  (startDt는 ISO 문자열)
+  function setEvents(events) {
+    const list = document.getElementById('events-list');
+    list.innerHTML = '';
+    if (!events || events.length === 0) {
+      list.innerHTML = '<div class="empty">이벤트 없음</div>';
+      return;
+    }
+    for (const ev of events) {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const d = new Date(ev.startDt);
+      const dateStr = `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      item.innerHTML = `<span class="date">${dateStr}</span>${escapeHtml(ev.title)}`;
+      item.addEventListener('click', () => post({ type: 'eventSelected', id: ev.id }));
+      list.appendChild(item);
+    }
+  }
+
+  function setFavEvents(events) {
+    const list = document.getElementById('fav-events-list');
+    list.innerHTML = '';
+    if (!events || events.length === 0) {
+      list.innerHTML = '<div class="empty">없음</div>';
+      return;
+    }
+    for (const ev of events) {
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML = `<span class="star">★</span>${escapeHtml(ev.title)}`;
+      item.addEventListener('click', () => post({ type: 'eventFavoriteToggle', id: ev.id }));
+      list.appendChild(item);
+    }
+  }
+
+  function setCategories(categories) {
+    const list = document.getElementById('fav-categories-list');
+    list.innerHTML = '';
+    if (!categories || categories.length === 0) {
+      list.innerHTML = '<div class="empty">없음</div>';
+      return;
+    }
+    for (const cat of categories) {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const star = cat.isFavorited ? '★' : '☆';
+      item.innerHTML = `<span class="star">${star}</span>${escapeHtml(cat.name)}`;
+      item.addEventListener('click', () => post({ type: 'categoryFavoriteToggle', id: cat.id }));
+      list.appendChild(item);
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c =>
+      ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  }
+
+  // C#에서 호출하는 진입점들
+  window.widget = { setMonth, setEvents, setFavEvents, setCategories };
+
+  // 준비 완료 신호
+  post({ type: 'ready' });
+</script>
+</body>
+</html>

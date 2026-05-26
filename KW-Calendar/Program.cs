@@ -1,3 +1,4 @@
+using System.IO;
 using KW_Calendar.Presenters;
 using KW_Calendar.Services;
 using KW_Calendar.Views;
@@ -26,12 +27,15 @@ namespace KW_Calendar
             var events = new EventService(localDb);
             var cats = new CategoryService(localDb);
 
-            // TODO: CalendarView가 ICalendarView를 구현하면 아래 주석 해제
-            // var view = new CalendarView();
-            // var presenter = new CalendarPresenter(view, events, cats, sync);
-            // presenter.Initialize();
+            // TODO: CalendarView가 ICalendarView를 구현하면 메인 창에도 Presenter 연결
+            var mainView = new CalendarView();
 
-            Application.Run(new CalendarView());
+            var widget = new CalendarWidgetView();
+            var widgetPresenter = new CalendarPresenter(widget, events, cats, sync);
+            widgetPresenter.Initialize();
+            widget.Show();
+
+            Application.Run(mainView);
         }
     }
 }

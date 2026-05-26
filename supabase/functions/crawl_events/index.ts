@@ -1,8 +1,9 @@
 import { getSupabase } from "./client.ts"
 import { crawlKwNotice, crawlKwAcademic, crawlInstagram } from "./crawlers.ts"
 
-async function crawlAndSave() {
+async function crawlAndSave(mode: string) {
   console.log("Starting crawl process...")
+  const skipExisting = mode !== "full"
 
   try {
     const { data } = await getSupabase()
@@ -12,7 +13,7 @@ async function crawlAndSave() {
       .limit(1)
     const lastItems = data as { crawled_at: string }[] | null
 
-    if (lastItems?.[0]) {
+    if (skipExisting && lastItems?.[0]) {
       const diffMs = Date.now() - new Date(lastItems[0].crawled_at).getTime()
       if (diffMs < 3600000) {
         console.log("Crawl skipped: last crawl was less than 1 hour ago.")
@@ -24,24 +25,26 @@ async function crawlAndSave() {
   }
 
   await Promise.allSettled([
-    crawlKwNotice(),
+    crawlKwNotice(undefined, undefined, undefined, skipExisting),
     crawlKwAcademic(),
-    crawlInstagram()
+    crawlInstagram(undefined, undefined, undefined, undefined, skipExisting)
   ])
 
   console.log("All crawl tasks finished.")
 }
 
-Deno.serve((req) => {
+Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 })
   }
 
+  const { mode = "incremental" } = await req.json().catch(() => ({}))
+
   const edgeRuntime = (globalThis as any).EdgeRuntime
   if (edgeRuntime?.waitUntil) {
-    edgeRuntime.waitUntil(crawlAndSave())
+    edgeRuntime.waitUntil(crawlAndSave(mode))
   } else {
-    crawlAndSave()
+    crawlAndSave(mode)
   }
 
   return new Response(JSON.stringify({ message: "Crawl started" }), {

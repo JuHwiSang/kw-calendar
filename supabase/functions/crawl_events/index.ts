@@ -3,6 +3,10 @@ import { crawlKwNotice, crawlKwAcademic, crawlInstagram } from "./crawlers.ts"
 
 async function crawlAndSave(mode: string) {
   console.log("Starting crawl process...")
+  // mode: "incremental" (기본값) — 마지막 크롤 후 1시간 이내면 실행을 건너뜀.
+  //       크롤러는 이미 저장된 항목을 만나면 중단한다.
+  // mode: "full" — 스로틀 검사를 생략하고 전체 범위를 재크롤한다.
+  //       기존 항목이 있어도 중단하지 않는다.
   const skipExisting = mode !== "full"
 
   try {

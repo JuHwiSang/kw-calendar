@@ -25,6 +25,9 @@ namespace KW_Calendar.Views
     ///    Show Desktop은 WS_MINIMIZEBOX 스타일이 있는 창만 최소화한다.
     ///    → CreateParams에서 WS_MINIMIZEBOX 비트를 끄면 Win+D가 위젯을 건너뛴다.
     ///    참고: https://devblogs.microsoft.com/oldnewthing/20241021-00/?p=110393
+    ///
+    /// TODO: 프로그램 처음 뜰 때 위젯이 일반 창처럼 위에 뜬다.
+    ///       사소한 이슈라 보류. 이후 Z순서 강제 로직 복원할 때 같이 해결.
     /// </summary>
     public partial class CalendarWidgetView : Form, ICalendarView
     {

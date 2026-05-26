@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
   if (edgeRuntime?.waitUntil) {
     edgeRuntime.waitUntil(crawlAndSave(mode))
   } else {
-    crawlAndSave(mode)
+    crawlAndSave(mode).catch(console.error)
   }
 
   return new Response(JSON.stringify({ message: "Crawl started" }), {

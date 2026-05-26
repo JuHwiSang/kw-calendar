@@ -25,9 +25,9 @@ async function crawlAndSave(mode: string) {
   }
 
   await Promise.allSettled([
-    crawlKwNotice(undefined, undefined, undefined, skipExisting),
+    crawlKwNotice({ skipExisting }),
     crawlKwAcademic(),
-    crawlInstagram(undefined, undefined, undefined, undefined, skipExisting)
+    crawlInstagram({ skipExisting })
   ])
 
   console.log("All crawl tasks finished.")

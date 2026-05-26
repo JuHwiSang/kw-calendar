@@ -34,12 +34,17 @@ async function fetchWithRetry(
   throw lastError
 }
 
-export async function crawlKwNotice(
-  db: any = getSupabase(),
-  fetchFn: typeof fetch = globalThis.fetch,
+export async function crawlKwNotice({
+  db = getSupabase(),
+  fetchFn = globalThis.fetch as typeof fetch,
   throttleMs = 500,
   skipExisting = true,
-) {
+}: {
+  db?: any
+  fetchFn?: typeof fetch
+  throttleMs?: number
+  skipExisting?: boolean
+} = {}) {
   console.log("Crawling KW Notice...")
   const MAX_PAGES = 5
 
@@ -54,8 +59,9 @@ export async function crawlKwNotice(
 
       if (listItems.length === 0) break
 
-      let newItemsCount = 0
+      let processedCount = 0
       for (const li of listItems) {
+        let detailUrl = ""
         try {
           const linkAnchor = li.querySelector("a")
           const href = linkAnchor?.getAttribute("href")
@@ -77,7 +83,7 @@ export async function crawlKwNotice(
             if (existing) continue
           }
 
-          const detailUrl = href.startsWith("http") ? href : `https://www.kw.ac.kr${href}`
+          detailUrl = href.startsWith("http") ? href : `https://www.kw.ac.kr${href}`
           const category = li.querySelector(".category")?.textContent?.trim() || "일반"
 
           await new Promise(r => setTimeout(r, throttleMs))
@@ -101,14 +107,14 @@ export async function crawlKwNotice(
             raw_content: `<!-- Category: ${category} -->\n${contentArea.outerHTML}`
           }, { onConflict: "source_type, source_id" })
 
-          newItemsCount++
+          processedCount++
         } catch (itemError) {
-          console.error(`Error processing notice item:`, itemError)
+          console.error(`Error processing notice item${detailUrl ? ` ${detailUrl}` : ""}:`, itemError)
         }
       }
 
-      console.log(`KW Notice page ${page}: ${newItemsCount} new items saved.`)
-      if (skipExisting && newItemsCount === 0) break
+      console.log(`KW Notice page ${page}: ${processedCount} items saved.`)
+      if (skipExisting && processedCount === 0) break
     } catch (pageError) {
       console.error(`Error processing KW Notice page ${page}:`, pageError)
       break
@@ -186,13 +192,19 @@ export async function crawlKwAcademic(
   }
 }
 
-export async function crawlInstagram(
-  db: any = getSupabase(),
-  fetchFn: typeof fetch = globalThis.fetch,
+export async function crawlInstagram({
+  db = getSupabase(),
+  fetchFn = globalThis.fetch as typeof fetch,
   igBusinessId = IG_BUSINESS_ID,
   igAccessToken = IG_ACCESS_TOKEN,
   skipExisting = true,
-) {
+}: {
+  db?: any
+  fetchFn?: typeof fetch
+  igBusinessId?: string
+  igAccessToken?: string
+  skipExisting?: boolean
+} = {}) {
   if (!igBusinessId || !igAccessToken) {
     console.warn("Instagram crawl skipped: Missing credentials.")
     return
@@ -203,7 +215,7 @@ export async function crawlInstagram(
 
   for (const username of TARGET_USERNAMES) {
     try {
-      await crawlInstagramAccount(username, db, fetchFn, igBusinessId, igAccessToken, skipExisting)
+      await crawlInstagramAccount(username, db, fetchFn, igBusinessId, igAccessToken, { skipExisting })
     } catch (e) {
       console.error(`Error crawling Instagram account ${username}:`, e)
     }
@@ -216,7 +228,7 @@ export async function crawlInstagramAccount(
   fetchFn: typeof fetch,
   igBusinessId: string,
   igAccessToken: string,
-  skipExisting = true,
+  { skipExisting = true }: { skipExisting?: boolean } = {},
 ) {
   const mediaFields = "id,caption,media_url,permalink,timestamp,media_type"
   const fields = `business_discovery.username(${username}){media.limit(50){${mediaFields}}}`
@@ -225,7 +237,7 @@ export async function crawlInstagramAccount(
   const params = new URLSearchParams({ fields, access_token: igAccessToken })
   let nextUrl: string | null = `${baseUrl}?${params}`
 
-  let newItemsCount = 0
+  let processedCount = 0
   let pageCount = 0
   const MAX_PAGES = 10
 
@@ -264,7 +276,7 @@ export async function crawlInstagramAccount(
           raw_content: JSON.stringify({ ...post, username })
         }, { onConflict: "source_type, source_id" })
 
-        newItemsCount++
+        processedCount++
       } catch (itemError) {
         console.error(`Error processing instagram post ${post.id}:`, itemError)
       }
@@ -274,5 +286,5 @@ export async function crawlInstagramAccount(
     pageCount++
   }
 
-  console.log(`Instagram @${username}: ${newItemsCount} new items saved (${pageCount} page(s) fetched).`)
+  console.log(`Instagram @${username}: ${processedCount} items saved (${pageCount} page(s) fetched).`)
 }

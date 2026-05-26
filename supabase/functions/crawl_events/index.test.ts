@@ -56,7 +56,7 @@ Deno.test("crawlKwNotice: saves new notice items", async () => {
   }
 
   const { db, upsertLog } = createMockDb()
-  await crawlKwNotice(db, mockFetch as typeof fetch, 0)
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0 })
 
   assertEquals(upsertLog.length, 1)
   assertEquals((upsertLog[0] as any).source_type, "kw_notice")
@@ -83,7 +83,7 @@ Deno.test("crawlKwNotice: skips notice when content area is missing", async () =
   }
 
   const { db, upsertLog } = createMockDb()
-  await crawlKwNotice(db, mockFetch as typeof fetch, 0)
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0 })
 
   assertEquals(upsertLog.length, 0)
 })
@@ -102,7 +102,7 @@ Deno.test("crawlKwNotice: skips already-saved notice items", async () => {
     Promise.resolve(new Response(listHtml, { status: 200 }))
 
   const { db, upsertLog } = createMockDb(new Set(["52518"]))
-  await crawlKwNotice(db, mockFetch as typeof fetch, 0)
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0 })
 
   assertEquals(upsertLog.length, 0)
 })
@@ -124,7 +124,7 @@ Deno.test("crawlKwNotice: stops pagination when page has no new items", async ()
   }
 
   const { db } = createMockDb(new Set(["99999"]))
-  await crawlKwNotice(db, mockFetch as typeof fetch, 0)
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0 })
 
   // Stops after page 1 (1 list fetch, 0 detail fetches)
   assertEquals(fetchCallCount, 1)
@@ -183,7 +183,7 @@ Deno.test("crawlInstagram: skips when credentials are missing", async () => {
   const { db, upsertLog } = createMockDb()
   const mockFetch = (): Promise<Response> => Promise.reject(new Error("should not be called"))
 
-  await crawlInstagram(db, mockFetch as typeof fetch, undefined, undefined)
+  await crawlInstagram({ db, fetchFn: mockFetch as typeof fetch, igBusinessId: undefined, igAccessToken: undefined })
   assertEquals(upsertLog.length, 0)
 })
 

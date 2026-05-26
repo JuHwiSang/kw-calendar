@@ -96,10 +96,11 @@ export async function crawlKwAcademic(
   const currentYear = now.getFullYear()
   const currentMonth = now.getMonth() + 1
 
-  const targets = [
-    { year: currentYear, month: currentMonth },
-    { year: currentMonth === 12 ? currentYear + 1 : currentYear, month: (currentMonth % 12) + 1 }
-  ]
+  const targets = Array.from({ length: 6 }, (_, i) => {
+    const month = ((currentMonth - 1 + i) % 12) + 1
+    const year = currentYear + Math.floor((currentMonth - 1 + i) / 12)
+    return { year, month }
+  })
 
   const apiUrl = "https://www.kw.ac.kr/KWBoard/list5_detail.jsp"
   const pageUrl = "https://www.kw.ac.kr/ko/life/bachelor_calendar.jsp"

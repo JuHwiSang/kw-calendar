@@ -149,8 +149,8 @@ Deno.test("crawlKwAcademic: saves single-day and range-date schedule items", asy
   const { db, upsertLog } = createMockDb()
   await crawlKwAcademic(db, mockFetch as typeof fetch)
 
-  // 2 items × 2 months = 4 upserts
-  assertEquals(upsertLog.length, 4)
+  // 2 items × 6 months = 12 upserts
+  assertEquals(upsertLog.length, 12)
   assertEquals((upsertLog[0] as any).source_type, "kw_academic")
 })
 

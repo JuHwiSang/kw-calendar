@@ -1,8 +1,13 @@
 import { getSupabase } from "./client.ts"
 import { crawlKwNotice, crawlKwAcademic, crawlInstagram } from "./crawlers.ts"
 
-async function crawlAndSave() {
+async function crawlAndSave(mode: string) {
   console.log("Starting crawl process...")
+  // mode: "incremental" (기본값) — 마지막 크롤 후 1시간 이내면 실행을 건너뜀.
+  //       크롤러는 이미 저장된 항목을 만나면 중단한다.
+  // mode: "full" — 스로틀 검사를 생략하고 전체 범위를 재크롤한다.
+  //       기존 항목이 있어도 중단하지 않는다.
+  const skipExisting = mode !== "full"
 
   try {
     const { data } = await getSupabase()
@@ -12,7 +17,7 @@ async function crawlAndSave() {
       .limit(1)
     const lastItems = data as { crawled_at: string }[] | null
 
-    if (lastItems?.[0]) {
+    if (skipExisting && lastItems?.[0]) {
       const diffMs = Date.now() - new Date(lastItems[0].crawled_at).getTime()
       if (diffMs < 3600000) {
         console.log("Crawl skipped: last crawl was less than 1 hour ago.")
@@ -24,24 +29,26 @@ async function crawlAndSave() {
   }
 
   await Promise.allSettled([
-    crawlKwNotice(),
+    crawlKwNotice({ skipExisting }),
     crawlKwAcademic(),
-    crawlInstagram()
+    crawlInstagram({ skipExisting })
   ])
 
   console.log("All crawl tasks finished.")
 }
 
-Deno.serve((req) => {
+Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 })
   }
 
+  const { mode = "incremental" } = await req.json().catch(() => ({}))
+
   const edgeRuntime = (globalThis as any).EdgeRuntime
   if (edgeRuntime?.waitUntil) {
-    edgeRuntime.waitUntil(crawlAndSave())
+    edgeRuntime.waitUntil(crawlAndSave(mode))
   } else {
-    crawlAndSave()
+    crawlAndSave(mode).catch(console.error)
   }
 
   return new Response(JSON.stringify({ message: "Crawl started" }), {

@@ -25,7 +25,7 @@ namespace KW_Calendar.Native
             SinkToBottom(handle);
         }
 
-        public static void SinkToBottom(IntPtr handle)
+        private static void SinkToBottom(IntPtr handle)
         {
             const uint SWP_NOMOVE = 0x0002;
             const uint SWP_NOSIZE = 0x0001;

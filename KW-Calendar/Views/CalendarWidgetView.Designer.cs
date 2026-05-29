@@ -5,7 +5,7 @@ namespace KW_Calendar.Views
         private System.ComponentModel.IContainer components = null;
 
         private Panel _titleBar;
-        private Label _dragArea;
+        private Panel _dragArea;
         private Button _closeBtn;
 
         private Panel _headerPanel;
@@ -39,7 +39,7 @@ namespace KW_Calendar.Views
 
             _root = new TableLayoutPanel();
             _titleBar = new Panel();
-            _dragArea = new Label();
+            _dragArea = new Panel();
             _closeBtn = new Button();
             _headerPanel = new Panel();
             _prevBtn = new Button();
@@ -57,13 +57,13 @@ namespace KW_Calendar.Views
             // --- 타이틀바: 드래그 영역 + 닫기 버튼 ---
             _dragArea.Dock = DockStyle.Fill;
             _dragArea.Cursor = Cursors.SizeAll;
-            _dragArea.Text = string.Empty;
             _dragArea.MouseDown += DragArea_MouseDown;
 
             _closeBtn.Text = "✕";
             _closeBtn.Dock = DockStyle.Right;
             _closeBtn.Width = 28;
             _closeBtn.FlatStyle = FlatStyle.Flat;
+            // TODO: NotifyIcon 도입 후 Hide()로 변경 (별도 이슈).
             _closeBtn.Click += (_, _) => Close();
 
             _titleBar.Height = 22;

@@ -27,7 +27,7 @@ namespace KW_Calendar.Native
     {
         protected void BeginSystemDrag()
         {
-            // WebView2가 마우스를 캡처한 상태이므로 먼저 캡처 해제.
+            // 호출자(컨트롤)가 mouse down으로 캡처를 잡은 상태이므로 먼저 캡처 해제.
             ReleaseCapture();
             // 시스템 드래그 모드 진입. Windows가 마우스 이동/릴리즈를 알아서 처리한다.
             const int WM_NCLBUTTONDOWN = 0x00A1;

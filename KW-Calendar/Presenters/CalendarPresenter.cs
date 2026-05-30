@@ -35,10 +35,16 @@ public class CalendarPresenter
         // _view.SyncRequested += OnSyncRequested;          // TODO: 수동 동기화 버튼 (우선순위 낮음)
         _view.EventFavoriteToggleRequested += OnEventFavoriteToggleRequested;
         _view.CategoryFavoriteToggleRequested += OnCategoryFavoriteToggleRequested;
+        _view.OpenRequested += OnOpenRequested;
 
         _view.DisplayedMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
         _ = LoadAllAsync();
     }
+
+    /// <summary>트레이 메뉴 등 View 외부에서 "창 띄워라"를 요청할 때 호출.</summary>
+    public void RequestOpen() => _view.Show();
+
+    private void OnOpenRequested(object? sender, EventArgs e) => _view.Show();
 
     // --- 캘린더 내비게이션 ---
 

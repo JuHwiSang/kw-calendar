@@ -104,4 +104,25 @@ public class CalendarPresenterTests
 
         await _categorySvc.Received(1).ToggleCategoryFavoriteAsync(7);
     }
+
+    [Fact]
+    public async Task OpenRequested_CallsShowOnView()
+    {
+        _presenter.Initialize();
+        await Task.Delay(50);
+        _view.ClearReceivedCalls();
+
+        _view.OpenRequested += Raise.Event();
+        await Task.Delay(50);
+
+        _view.Received(1).Show();
+    }
+
+    [Fact]
+    public void RequestOpen_CallsShowOnView()
+    {
+        _presenter.RequestOpen();
+
+        _view.Received(1).Show();
+    }
 }

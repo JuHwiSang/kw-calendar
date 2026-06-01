@@ -13,8 +13,8 @@ async function fetchWithRetry(
   url: string,
   options: RequestInit,
   fetchFn: typeof fetch,
-  maxRetries = 3,
-  timeoutMs = 5000,
+  // baseDelayMs: 테스트에서 0으로 전달해 exponential backoff 대기를 제거할 수 있음
+  { maxRetries = 3, timeoutMs = 5000, baseDelayMs = 1000 }: { maxRetries?: number; timeoutMs?: number; baseDelayMs?: number } = {},
 ): Promise<Response> {
   let lastError: unknown
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -27,7 +27,7 @@ async function fetchWithRetry(
       if (err instanceof ClientError) throw err
       lastError = err
       if (attempt < maxRetries) {
-        await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)))
+        await new Promise(r => setTimeout(r, baseDelayMs * Math.pow(2, attempt)))
       }
     }
   }
@@ -39,11 +39,13 @@ export async function crawlKwNotice({
   fetchFn = globalThis.fetch as typeof fetch,
   throttleMs = 500,
   skipExisting = true,
+  retryBaseDelayMs = 1000,
 }: {
   db?: any
   fetchFn?: typeof fetch
   throttleMs?: number
   skipExisting?: boolean
+  retryBaseDelayMs?: number
 } = {}) {
   console.log("Crawling KW Notice...")
   const MAX_PAGES = 5
@@ -51,7 +53,7 @@ export async function crawlKwNotice({
   for (let page = 1; page <= MAX_PAGES; page++) {
     try {
       const listUrl = `https://www.kw.ac.kr/ko/life/notice.jsp?tpage=${page}&searchKey=1&searchVal=&srCategoryId=`
-      const response = await fetchWithRetry(listUrl, { headers: { "User-Agent": KW_USER_AGENT } }, fetchFn)
+      const response = await fetchWithRetry(listUrl, { headers: { "User-Agent": KW_USER_AGENT } }, fetchFn, { baseDelayMs: retryBaseDelayMs })
 
       const html = await response.text()
       const { document } = parseHTML(html) as any
@@ -88,7 +90,7 @@ export async function crawlKwNotice({
 
           await new Promise(r => setTimeout(r, throttleMs))
 
-          const detailRes = await fetchWithRetry(detailUrl, { headers: { "User-Agent": KW_USER_AGENT } }, fetchFn)
+          const detailRes = await fetchWithRetry(detailUrl, { headers: { "User-Agent": KW_USER_AGENT } }, fetchFn, { baseDelayMs: retryBaseDelayMs })
 
           const detailHtml = await detailRes.text()
           const { document: detailDoc } = parseHTML(detailHtml) as any
@@ -116,8 +118,9 @@ export async function crawlKwNotice({
       console.log(`KW Notice page ${page}: ${processedCount} items saved.`)
       if (skipExisting && processedCount === 0) break
     } catch (pageError) {
+      // 특정 페이지 fetch 실패 시 루프를 종료하지 않고 다음 페이지로 계속
       console.error(`Error processing KW Notice page ${page}:`, pageError)
-      break
+      continue
     }
   }
 }
@@ -125,9 +128,9 @@ export async function crawlKwNotice({
 export async function crawlKwAcademic(
   db: any = getSupabase(),
   fetchFn: typeof fetch = globalThis.fetch,
+  now = new Date(),
 ) {
   console.log("Crawling KW Academic...")
-  const now = new Date()
   const currentYear = now.getFullYear()
   const currentMonth = now.getMonth() + 1
 

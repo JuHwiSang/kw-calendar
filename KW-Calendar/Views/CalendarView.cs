@@ -14,8 +14,9 @@ namespace KW_Calendar.Views
         private int currentYear = FixedYear;
         private int currentMonth = DateTime.Today.Year == FixedYear ? DateTime.Today.Month : 1;
 
-        private int detailScrollY = 0;
-        private const int DetailScrollStep = 45;
+        //상세 패널 분리(삭제)
+        //private int detailScrollY = 0;
+        //private const int DetailScrollStep = 45;
 
         private DateTime displayedMonth;
 
@@ -90,162 +91,9 @@ namespace KW_Calendar.Views
         public event EventHandler<int> EventFavoriteToggleRequested;
         public event EventHandler<int> CategoryFavoriteToggleRequested;
 
-        private readonly Dictionary<int, CalendarEventInfo> sampleEvents =
-            new Dictionary<int, CalendarEventInfo>
-            {
-                {
-                    2,
-                    new CalendarEventInfo(
-                        2,
-                        "근로...",
-                        "근로 장학 신청",
-                        "장학금/등록금/지원금",
-                        "09:00 - 18:00",
-                        "온라인 신청",
-                        "2026학년도 근로 장학 신청 안내입니다.\n신청 기간 내 포털을 통해 접수해 주시기 바랍니다.\n세부 일정 및 제출 서류는 공지사항을 확인해 주세요."
-                    )
-                },
-                {
-                    10,
-                    new CalendarEventInfo(
-                        10,
-                        "SW학...",
-                        "SW 학습 프로그램",
-                        "비교과/자기계발",
-                        "13:00 - 15:00",
-                        "새빛관 강의실",
-                        "SW 학습 역량 강화를 위한 비교과 프로그램입니다.\n참여를 원하는 학생은 사전 신청 후 참석해 주세요."
-                    )
-                },
-                {
-                    14,
-                    new CalendarEventInfo(
-                        14,
-                        "알고...",
-                        "알고리즘 팀플",
-                        "학사/수업",
-                        "14:00 - 16:00",
-                        "소프트웨어관 301호",
-                        "안녕하세요, 알고리즘 2분반 조교입니다.\n기말 프로젝트 중간 점검 및 역할 분담을 위한 팀별 대면 미팅을 진행합니다.\n팀장들은 각 팀원들의 개발 진행 상황을 사전에 취합하여 제출해주시기 바라며, 미팅 시 조별 노트북을 최소 1대 이상 필히 지참해주시기 바랍니다.\n불참 시 팀 점수에 불이익이 있을 수 있습니다."
-                    )
-                },
-                {
-                    15,
-                    new CalendarEventInfo(
-                        15,
-                        "공운...",
-                        "공운 행사",
-                        "행사",
-                        "11:00 - 12:00",
-                        "교내 광장",
-                        "교내 행사 안내입니다.\n참여 학생은 행사 시작 10분 전까지 도착해 주세요."
-                    )
-                },
-                {
-                    16,
-                    new CalendarEventInfo(
-                        16,
-                        "광운...",
-                        "광운 공지",
-                        "행사",
-                        "10:00 - 11:00",
-                        "온라인",
-                        "광운대학교 공지사항입니다.\n자세한 내용은 원문 페이지를 확인해 주세요."
-                    )
-                },
-                {
-                    17,
-                    new CalendarEventInfo(
-                        17,
-                        "광운...",
-                        "광운 안내",
-                        "행사",
-                        "15:00 - 16:00",
-                        "복지관",
-                        "광운대학교 행사 안내입니다.\n세부 일정은 추후 변경될 수 있습니다."
-                    )
-                },
-                {
-                    28,
-                    new CalendarEventInfo(
-                        28,
-                        "기말...",
-                        "기말고사",
-                        "학사/수업",
-                        "09:00 - 11:00",
-                        "강의실 추후 공지",
-                        "기말고사 일정 안내입니다.\n시험 범위와 준비물은 수업 공지를 확인해 주세요."
-                    )
-                }
-            };
-
-        private readonly List<CategoryInfo> categories =
-            new List<CategoryInfo>
-            {
-                new CategoryInfo(
-                    "학사/수업",
-                    Color.FromArgb(248, 113, 113),
-                    Color.FromArgb(254, 242, 242),
-                    Color.FromArgb(185, 28, 28),
-                    true
-                ),
-
-                new CategoryInfo(
-                    "행사",
-                    Color.FromArgb(251, 146, 60),
-                    Color.FromArgb(255, 247, 237),
-                    Color.FromArgb(194, 65, 12),
-                    true
-                ),
-
-                new CategoryInfo(
-                    "장학금/등록금/지원금",
-                    Color.FromArgb(250, 204, 21),
-                    Color.FromArgb(254, 252, 232),
-                    Color.FromArgb(161, 98, 7),
-                    true
-                ),
-
-                new CategoryInfo(
-                    "취업/창업/경력",
-                    Color.FromArgb(74, 222, 128),
-                    Color.FromArgb(240, 253, 244),
-                    Color.FromArgb(21, 128, 61),
-                    true
-                ),
-
-                new CategoryInfo(
-                    "국제/교환/유학생",
-                    Color.FromArgb(45, 212, 191),
-                    Color.FromArgb(240, 253, 250),
-                    Color.FromArgb(15, 118, 110),
-                    true
-                ),
-
-                new CategoryInfo(
-                    "비교과/자기계발",
-                    Color.FromArgb(96, 165, 250),
-                    Color.FromArgb(239, 246, 255),
-                    Color.FromArgb(29, 78, 216),
-                    true
-                ),
-
-                new CategoryInfo(
-                    "생활/복지/시설",
-                    Color.FromArgb(129, 140, 248),
-                    Color.FromArgb(238, 242, 255),
-                    Color.FromArgb(67, 56, 202),
-                    true
-                ),
-
-                new CategoryInfo(
-                    "봉사",
-                    Color.FromArgb(192, 132, 252),
-                    Color.FromArgb(250, 245, 255),
-                    Color.FromArgb(126, 34, 206),
-                    true
-                )
-            };
+        //Sample데이터 삭제
+        //대신 Present 데이터 가져오기
+        
 
         public CalendarView()
         {
@@ -261,7 +109,8 @@ namespace KW_Calendar.Views
             btnPrev.Click += BtnPrev_Click;
             btnNext.Click += BtnNext_Click;
 
-            lblDetailClose.Click += (s, e) => HideEventDetail();
+            //삭제
+            /*lblDetailClose.Click += (s, e) => HideEventDetail();
 
             lblScrollUp.Click += (s, e) => ScrollDetail(-DetailScrollStep);
             lblScrollDown.Click += (s, e) => ScrollDetail(DetailScrollStep);
@@ -270,7 +119,7 @@ namespace KW_Calendar.Views
             detailContent.MouseWheel += DetailBody_MouseWheel;
 
             AttachDetailMouseWheel(detailContent);
-            UpdateDetailThumb();
+            UpdateDetailThumb();*/
 
             lblDetailClose.MouseEnter += (s, e) =>
             {
@@ -282,9 +131,10 @@ namespace KW_Calendar.Views
                 lblDetailClose.ForeColor = Color.FromArgb(107, 114, 128);
             };
 
-            BuildCalendar(currentYear, currentMonth);
-            BuildCategoryList();
-            UpdateArrowState();
+            /*Presenter가 초기화 담당*/
+            //BuildCalendar(currentYear, currentMonth);
+            //BuildCategoryList();
+            //UpdateArrowState();
 
             EnableFormDrag(mainCard);
             EnableFormDrag(leftArea);
@@ -367,7 +217,7 @@ namespace KW_Calendar.Views
             }
         }
 
-        private void BtnPrev_Click(object sender, EventArgs e)
+        /*private void BtnPrev_Click(object sender, EventArgs e)
         {
             PreviousMonthRequested?.Invoke(this, EventArgs.Empty);
 
@@ -383,27 +233,21 @@ namespace KW_Calendar.Views
             UpdateArrowState();
         }
 
+        private void BtnNext_Click(object sender, EventArgs e)*/
+        //Presenter에서 조작
         private void BtnNext_Click(object sender, EventArgs e)
         {
             NextMonthRequested?.Invoke(this, EventArgs.Empty);
-
-            if (currentMonth >= 12)
-                return;
-
-            currentMonth++;
-            currentYear = FixedYear;
-            displayedMonth = new DateTime(currentYear, currentMonth, 1);
-
-            UpdateMonthTitle();
-            BuildCalendar(currentYear, currentMonth);
-            UpdateArrowState();
-            BuildCategoryList();
+        }
+        private void BtnPrev_Click(object sender, EventArgs e)
+        {
+            PreviousMonthRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void UpdateMonthTitle()
         {
-            currentYear = FixedYear;
-            lblMonthYear.Text = $"{FixedYear}년 {currentMonth}월";
+            //currentYear = FixedYear; /*위 생성자 수정. Presenter 담당*/
+            lblMonthYear.Text = $"{currentYear}년 {currentMonth}월";
         }
 
         private void UpdateArrowState()
@@ -469,11 +313,17 @@ namespace KW_Calendar.Views
                             today.Month == month &&
                             today.Day == day;
 
-                        CalendarEventInfo eventInfo;
-                        sampleEvents.TryGetValue(day, out eventInfo);
+                        /*현 코드 내에 sample데이터만 사용하게 됨 -> Present에서 주는 데이터 사용하게*/
+                        DateOnly date = new DateOnly(year, month, day);
 
-                        cell = CreateDayCell(day, eventInfo, isToday);
+                        if (!eventsByDay.TryGetValue(date, out var dayEvents))
+                        {
+                            dayEvents = new List<Event>();
+                        }
+
+                        cell = CreateDayCell(day, dayEvents, isToday);
                         day++;
+                        //
                     }
                     else
                     {
@@ -498,8 +348,8 @@ namespace KW_Calendar.Views
             };
         }
 
-        private RoundedPanel CreateDayCell(int day, CalendarEventInfo eventInfo, bool isToday)
-        {
+        private RoundedPanel CreateDayCell(int day, IReadOnlyList<Event> dayEvents, bool isToday)
+        {//IReadOnlyList<Event> dayEvents 로 수정
             RoundedPanel cell = new RoundedPanel
             {
                 Dock = DockStyle.Fill,
@@ -555,34 +405,32 @@ namespace KW_Calendar.Views
                 cell.Controls.Add(dayLabel);
             }
 
-            if (eventInfo != null)
+            //이벤트 if문 수정
+            if (dayEvents.Count > 0)
             {
-                CategoryInfo linkedCategory = categories.Find(c => c.Title == eventInfo.CategoryTitle);
+                Event firstEvent = dayEvents[0];
 
-                Color tagBackColor = linkedCategory != null
-                    ? linkedCategory.EventBackColor
-                    : Color.FromArgb(254, 226, 226);
+                Category? linkedCategory = modelCategories
+                    .FirstOrDefault(c => c.Id == firstEvent.CategoryId);
 
-                Color tagForeColor = linkedCategory != null
-                    ? linkedCategory.EventForeColor
-                    : Color.FromArgb(180, 83, 9);
-
-                bool isFavoriteEvent = linkedCategory != null && linkedCategory.IsFavorite;
+                bool isFavoriteEvent =
+                    firstEvent.IsFavorited ||
+                    (linkedCategory != null && linkedCategory.IsFavorited);
 
                 RoundedPanel tag = new RoundedPanel
                 {
                     Size = new Size(64, 20),
                     BorderRadius = 5,
-                    FillColor = tagBackColor,
+                    FillColor = GetCategoryBackColor(linkedCategory),
                     BorderSize = 0
                 };
 
                 Label eventLabel = new Label
                 {
-                    Text = isFavoriteEvent ? "★ " + eventInfo.Text : eventInfo.Text,
+                    Text = isFavoriteEvent ? "★ " + ShortenTitle(firstEvent.Title) : ShortenTitle(firstEvent.Title),
                     Dock = DockStyle.Fill,
                     TextAlign = ContentAlignment.MiddleCenter,
-                    ForeColor = tagForeColor,
+                    ForeColor = GetCategoryForeColor(linkedCategory),
                     BackColor = Color.Transparent,
                     Font = new Font("맑은 고딕", 7.5F, FontStyle.Bold)
                 };
@@ -592,8 +440,8 @@ namespace KW_Calendar.Views
                 tag.Cursor = Cursors.Hand;
                 eventLabel.Cursor = Cursors.Hand;
 
-                tag.Click += (s, e) => OpenEventDetail(eventInfo);
-                eventLabel.Click += (s, e) => OpenEventDetail(eventInfo);
+                tag.Click += (s, e) => EventSelected?.Invoke(this, firstEvent.Id);
+                eventLabel.Click += (s, e) => EventSelected?.Invoke(this, firstEvent.Id);
 
                 cell.Controls.Add(tag);
 
@@ -603,11 +451,21 @@ namespace KW_Calendar.Views
                     tag.Top = 42;
                 };
             }
-
             return cell;
+
+
+        }
+        //보조 메서드 추가
+        private string ShortenTitle(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                return "";
+
+            return title.Length > 3 ? title.Substring(0, 3) + "..." : title;
         }
 
-        private void OpenEventDetail(CalendarEventInfo eventInfo)
+        //삭제
+       /* private void OpenEventDetail(CalendarEventInfo eventInfo)
         {
             EventSelected?.Invoke(this, eventInfo.EventId);
             ShowEventDetail(eventInfo);
@@ -619,14 +477,16 @@ namespace KW_Calendar.Views
 
             int visibleCount = 0;
 
-            foreach (CategoryInfo category in categories)
+            //수정
+            foreach (Category category in modelCategories)
             {
-                if (rbFav.Checked && !category.IsFavorite)
+                if (rbFav.Checked && !category.IsFavorited)
                     continue;
 
                 AddCategoryItem(category);
                 visibleCount++;
             }
+            //
 
             if (visibleCount == 0)
             {
@@ -644,7 +504,9 @@ namespace KW_Calendar.Views
             }
         }
 
-        private void AddCategoryItem(CategoryInfo category)
+
+        //수정
+        private void AddCategoryItem(Category category)
         {
             RoundedPanel item = new RoundedPanel
             {
@@ -663,13 +525,13 @@ namespace KW_Calendar.Views
                 Size = new Size(13, 13),
                 BorderRadius = 5,
                 BorderSize = 0,
-                FillColor = category.DotColor,
+                FillColor = GetCategoryDotColor(category),
                 BackColor = Color.Transparent
             };
 
             Label text = new Label
             {
-                Text = category.Title,
+                Text = category.Name,
                 ForeColor = Color.FromArgb(31, 41, 55),
                 BackColor = Color.Transparent,
                 Font = new Font("맑은 고딕", 9.5F, FontStyle.Bold),
@@ -687,7 +549,9 @@ namespace KW_Calendar.Views
             flpCategories.Controls.Add(item);
         }
 
-        private Label CreateStarButton(CategoryInfo category)
+
+        //수정
+        private Label CreateStarButton(Category category)
         {
             bool canToggle = rbAll.Checked;
 
@@ -701,7 +565,7 @@ namespace KW_Calendar.Views
                 Cursor = canToggle ? Cursors.Hand : Cursors.Default
             };
 
-            if (category.IsFavorite)
+            if (category.IsFavorited)
             {
                 starButton.Text = "★";
                 starButton.ForeColor = Color.FromArgb(250, 204, 21);
@@ -714,13 +578,66 @@ namespace KW_Calendar.Views
 
             if (canToggle)
             {
-                starButton.Click += (s, e) => ToggleFavorite(category);
+                starButton.Click += (s, e) =>
+                {
+                    CategoryFavoriteToggleRequested?.Invoke(this, category.Id);
+                };
             }
 
             return starButton;
         }
 
-        private void ToggleFavorite(CategoryInfo category)
+        //카테고리 색상 보조 메서드 추가(이름 기준으로 색상 추가)
+        private Color GetCategoryDotColor(Category? category)
+        {
+            return category?.Name switch
+            {
+                "학사/수업" => Color.FromArgb(248, 113, 113),
+                "행사" => Color.FromArgb(251, 146, 60),
+                "장학금/등록금/지원금" => Color.FromArgb(250, 204, 21),
+                "취업/창업/경력" => Color.FromArgb(74, 222, 128),
+                "국제/교환/유학생" => Color.FromArgb(45, 212, 191),
+                "비교과/자기계발" => Color.FromArgb(96, 165, 250),
+                "생활/복지/시설" => Color.FromArgb(129, 140, 248),
+                "봉사" => Color.FromArgb(192, 132, 252),
+                _ => Color.FromArgb(156, 163, 175)
+            };
+        }
+
+        private Color GetCategoryBackColor(Category? category)
+        {
+            return category?.Name switch
+            {
+                "학사/수업" => Color.FromArgb(254, 242, 242),
+                "행사" => Color.FromArgb(255, 247, 237),
+                "장학금/등록금/지원금" => Color.FromArgb(254, 252, 232),
+                "취업/창업/경력" => Color.FromArgb(240, 253, 244),
+                "국제/교환/유학생" => Color.FromArgb(240, 253, 250),
+                "비교과/자기계발" => Color.FromArgb(239, 246, 255),
+                "생활/복지/시설" => Color.FromArgb(238, 242, 255),
+                "봉사" => Color.FromArgb(250, 245, 255),
+                _ => Color.FromArgb(243, 244, 246)
+            };
+        }
+
+        private Color GetCategoryForeColor(Category? category)
+        {
+            return category?.Name switch
+            {
+                "학사/수업" => Color.FromArgb(185, 28, 28),
+                "행사" => Color.FromArgb(194, 65, 12),
+                "장학금/등록금/지원금" => Color.FromArgb(161, 98, 7),
+                "취업/창업/경력" => Color.FromArgb(21, 128, 61),
+                "국제/교환/유학생" => Color.FromArgb(15, 118, 110),
+                "비교과/자기계발" => Color.FromArgb(29, 78, 216),
+                "생활/복지/시설" => Color.FromArgb(67, 56, 202),
+                "봉사" => Color.FromArgb(126, 34, 206),
+                _ => Color.FromArgb(75, 85, 99)
+            };
+        }
+
+        //수정 -> 삭제
+        /*private void ToggleFavorite(CategoryInfo category)
         {
             if (!rbAll.Checked)
                 return;
@@ -736,9 +653,10 @@ namespace KW_Calendar.Views
 
             BuildCategoryList();
             BuildCalendar(currentYear, currentMonth);
-        }
+        }*/
 
-        private void ShowEventDetail(CalendarEventInfo eventInfo)
+        //ShowEventDetail함수 삭제
+        /*private void ShowEventDetail(CalendarEventInfo eventInfo)
         {
             CategoryInfo linkedCategory = categories.Find(c => c.Title == eventInfo.CategoryTitle);
 
@@ -762,12 +680,10 @@ namespace KW_Calendar.Views
             detailScrollY = 0;
             detailContent.Top = 0;
             UpdateDetailThumb();
-        }
+        }*/
 
-        private void HideEventDetail()
-        {
-            detailPanel.Visible = false;
-        }
+        //메서드 전부 삭제
+        /*private void HideEventDetail()
 
         private void DetailBody_MouseWheel(object sender, MouseEventArgs e)
         {
@@ -822,59 +738,9 @@ namespace KW_Calendar.Views
                 if (control.HasChildren)
                     AttachDetailMouseWheel(control);
             }
-        }
+        }*/
 
-        private class CalendarEventInfo
-        {
-            public int EventId { get; private set; }
-            public string Text { get; private set; }
-            public string DetailTitle { get; private set; }
-            public string CategoryTitle { get; private set; }
-            public string TimeText { get; private set; }
-            public string PlaceText { get; private set; }
-            public string OriginalText { get; private set; }
-
-            public CalendarEventInfo(
-                int eventId,
-                string text,
-                string detailTitle,
-                string categoryTitle,
-                string timeText,
-                string placeText,
-                string originalText)
-            {
-                EventId = eventId;
-                Text = text;
-                DetailTitle = detailTitle;
-                CategoryTitle = categoryTitle;
-                TimeText = timeText;
-                PlaceText = placeText;
-                OriginalText = originalText;
-            }
-        }
-
-        private class CategoryInfo
-        {
-            public string Title { get; private set; }
-            public Color DotColor { get; private set; }
-            public Color EventBackColor { get; private set; }
-            public Color EventForeColor { get; private set; }
-            public bool IsFavorite { get; set; }
-
-            public CategoryInfo(
-                string title,
-                Color dotColor,
-                Color eventBackColor,
-                Color eventForeColor,
-                bool isFavorite)
-            {
-                Title = title;
-                DotColor = dotColor;
-                EventBackColor = eventBackColor;
-                EventForeColor = eventForeColor;
-                IsFavorite = isFavorite;
-            }
-        }
+        //CalendarEventInfo, CategoryInfo 클래스도 삭제
 
         [DllImport("user32.dll")]
         private static extern bool ReleaseCapture();

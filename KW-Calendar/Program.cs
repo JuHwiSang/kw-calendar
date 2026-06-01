@@ -31,7 +31,7 @@ namespace KW_Calendar
             // var presenter = new CalendarPresenter(view, events, cats, sync);
             // presenter.Initialize();
 
-            Application.Run(new CalendarView());
+            Application.Run(view);
         }
     }
 }

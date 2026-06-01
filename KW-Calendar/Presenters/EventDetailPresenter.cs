@@ -70,3 +70,4 @@ public class EventDetailPresenter
         _view.CurrentEvent = updated;
     }
 }
+

@@ -123,6 +123,7 @@ public class CalendarPresenter
         await Task.CompletedTask;
     }
 
+    /*
     private async Task SyncAndRefreshAsync()
     {
         if (_syncService.IsSyncing)
@@ -130,5 +131,16 @@ public class CalendarPresenter
 
         await _syncService.SyncEventsAsync();
         await LoadAllAsync();
+    }*///Modaless 형태로 변환 -> modaless 상세창
+    private Task OpenEventDetailAsync(int eventId)
+    {
+        var detailView = new EventDetailView();
+        var detailPresenter = new EventDetailPresenter(detailView, _eventService);
+
+        detailPresenter.Initialize(eventId);
+
+        detailView.Show(); // modeless
+
+        return Task.CompletedTask;
     }
 }

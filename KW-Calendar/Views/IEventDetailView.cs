@@ -13,3 +13,4 @@ public interface IEventDetailView
     event EventHandler OpenExternalLinkRequested;
     event EventHandler ViewClosed;
 }
+

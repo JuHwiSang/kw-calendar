@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.18362</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>KW_Calendar.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>

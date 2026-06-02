@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+﻿/*using System.ComponentModel;
 using KW_Calendar.Models;
 
 namespace KW_Calendar.Views;
@@ -14,13 +14,11 @@ public partial class EventDetailView : Form, IEventDetailView
         get => currentEvent;
         set
         {
-            currentEvent = value ?? new Event();
+            currentEvent = value;
             RenderEvent();
         }
     }
 
-    [Browsable(false)]
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool IsFavorited
     {
         get => currentEvent.IsFavorited;
@@ -31,9 +29,9 @@ public partial class EventDetailView : Form, IEventDetailView
         }
     }
 
-    public event EventHandler<int> FavoriteToggleRequested = delegate { };
-    public event EventHandler OpenExternalLinkRequested = delegate { };
-    public event EventHandler ViewClosed = delegate { };
+    public event EventHandler<int>? FavoriteToggleRequested;
+    public event EventHandler? OpenExternalLinkRequested;
+    public event EventHandler? ViewClosed;
 
     public EventDetailView()
     {
@@ -41,29 +39,27 @@ public partial class EventDetailView : Form, IEventDetailView
 
         btnFavorite.Click += BtnFavorite_Click;
         btnOpenExternalLink.Click += BtnOpenExternalLink_Click;
+
         FormClosed += EventDetailView_FormClosed;
     }
 
     private void BtnFavorite_Click(object? sender, EventArgs e)
     {
-        FavoriteToggleRequested(this, currentEvent.Id);
+        FavoriteToggleRequested?.Invoke(this, currentEvent.Id);
     }
 
     private void BtnOpenExternalLink_Click(object? sender, EventArgs e)
     {
-        OpenExternalLinkRequested(this, EventArgs.Empty);
+        OpenExternalLinkRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void EventDetailView_FormClosed(object? sender, FormClosedEventArgs e)
     {
-        ViewClosed(this, EventArgs.Empty);
+        ViewClosed?.Invoke(this, EventArgs.Empty);
     }
 
     private void RenderEvent()
     {
-        if (lblTitle == null)
-            return;
-
         lblTitle.Text = currentEvent.Title;
         lblTime.Text = $"{currentEvent.StartDt:yyyy.MM.dd HH:mm} - {currentEvent.EndDt:HH:mm}";
         lblBody.Text = currentEvent.Body ?? "";
@@ -76,9 +72,6 @@ public partial class EventDetailView : Form, IEventDetailView
 
     private void UpdateFavoriteState()
     {
-        if (btnFavorite == null)
-            return;
-
         btnFavorite.Text = currentEvent.IsFavorited ? "★" : "☆";
     }
-}
+}*/

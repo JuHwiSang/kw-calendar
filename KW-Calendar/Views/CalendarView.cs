@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using KW_Calendar.Models;
+using System.ComponentModel;//추가
 
 namespace KW_Calendar.Views
 {
@@ -29,6 +30,8 @@ namespace KW_Calendar.Views
         private IReadOnlyList<Category> modelCategories =
             new List<Category>();
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public DateTime DisplayedMonth
         {
             get => displayedMonth;
@@ -46,8 +49,29 @@ namespace KW_Calendar.Views
                     UpdateArrowState();
                 }
             }
-        }
+        }//대체 코드
+        /*public DateTime DisplayedMonth
+        {
+            get => displayedMonth;
+            set
+            {
+                displayedMonth = value;
 
+                currentYear = value.Year;
+                currentMonth = value.Month;
+
+                if (lblMonthYear != null && tlpCalendar != null)
+                {
+                    UpdateMonthTitle();
+                    BuildCalendar(currentYear, currentMonth);
+                    UpdateArrowState();
+                }
+            }
+
+        }*/
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IReadOnlyDictionary<DateOnly, IReadOnlyList<Event>> EventsByDay
         {
             get => eventsByDay;
@@ -62,6 +86,8 @@ namespace KW_Calendar.Views
             }
         }
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IReadOnlyList<Event> Events
         {
             get => events;
@@ -71,6 +97,9 @@ namespace KW_Calendar.Views
             }
         }
 
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IReadOnlyList<Category> Categories
         {
             get => modelCategories;
@@ -469,7 +498,7 @@ namespace KW_Calendar.Views
         {
             EventSelected?.Invoke(this, eventInfo.EventId);
             ShowEventDetail(eventInfo);
-        }
+        }*/
 
         private void BuildCategoryList()
         {

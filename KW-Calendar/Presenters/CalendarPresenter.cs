@@ -117,13 +117,8 @@ public class CalendarPresenter
         _view.Categories = catTask.Result;
     }
 
-    private async Task OpenEventDetailAsync(int eventId)
-    {
-        // TODO: retrieve event, construct EventDetailPresenter + view, show detail panel/dialog.
-        await Task.CompletedTask;
-    }
-
-    /*
+  
+    
     private async Task SyncAndRefreshAsync()
     {
         if (_syncService.IsSyncing)
@@ -131,16 +126,53 @@ public class CalendarPresenter
 
         await _syncService.SyncEventsAsync();
         await LoadAllAsync();
-    }*///Modaless 형태로 변환 -> modaless 상세창
-    private Task OpenEventDetailAsync(int eventId)
+    }
+    /*private async Task OpenEventDetailAsync(int eventId)
     {
         var detailView = new EventDetailView();
         var detailPresenter = new EventDetailPresenter(detailView, _eventService);
 
-        detailPresenter.Initialize(eventId);
+        //detailPresenter.Initialize(eventId);
+        await detailPresenter.InitializeAsync(eventId); //EventdetailPresenter.cs 수정된 메서드와 같이 수정
 
-        detailView.Show(); // modeless
+        if (_view is System.Windows.Forms.Form owner)
+        {
+            detailView.ShowDialog(owner);
+        }
+        else
+        {
+            detailView.ShowDialog();
+        }
 
-        return Task.CompletedTask;
+        await LoadAllAsync();
+    }*/
+    private async Task OpenEventDetailAsync(int eventId)
+    {
+        var detailView = new EventDetailView();
+        var detailPresenter = new EventDetailPresenter(detailView, _eventService);
+
+        await detailPresenter.InitializeAsync(eventId);
+
+        if (_view is System.Windows.Forms.Form owner)
+        {
+            detailView.ShowDialog(owner);
+        }
+        else
+        {
+            detailView.ShowDialog();
+        }
+
+        await LoadAllAsync();
     }
+
+
+    //추가
+    /*private async Task SyncAndRefreshAsync()
+    {
+        if (_syncService.IsSyncing)
+            return;
+
+        await _syncService.SyncEventsAsync();
+        await LoadAllAsync();
+    }*/
 }

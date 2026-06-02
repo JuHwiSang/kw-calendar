@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -12,6 +13,8 @@ namespace KW_Calendar.Views
         private int borderSize = 1;
         private Color fillColor = Color.White;
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int BorderRadius
         {
             get => borderRadius;
@@ -23,6 +26,8 @@ namespace KW_Calendar.Views
             }
         }
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color BorderColor
         {
             get => borderColor;
@@ -33,6 +38,8 @@ namespace KW_Calendar.Views
             }
         }
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int BorderSize
         {
             get => borderSize;
@@ -43,6 +50,8 @@ namespace KW_Calendar.Views
             }
         }
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color FillColor
         {
             get => fillColor;

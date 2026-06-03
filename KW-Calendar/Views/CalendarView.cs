@@ -39,6 +39,11 @@ namespace KW_Calendar.Views
         private IReadOnlyList<Category> modelCategories =
             new List<Category>();
 
+        private const int CellPoolRows = 6;
+        private const int CellPoolSize = CellPoolRows * 7;
+        private readonly DayCell[] cellPool = new DayCell[CellPoolSize];
+        private int currentRowCount = -1;
+
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public DateTime DisplayedMonth
@@ -141,6 +146,7 @@ namespace KW_Calendar.Views
             displayedMonth = new DateTime(currentYear, currentMonth, 1);
 
             ApplyCalendarDesign();
+            InitializeCellPool();
 
             rbAll.CheckedChanged += FilterRadio_CheckedChanged;
             rbFav.CheckedChanged += FilterRadio_CheckedChanged;
@@ -303,7 +309,7 @@ namespace KW_Calendar.Views
             btnNext.Cursor = currentMonth >= 12 ? Cursors.Default : Cursors.Hand;
         }
 
-        private void BuildCalendar(int year, int month)
+        private void InitializeCellPool()
         {
             tlpCalendar.SuspendLayout();
             try
@@ -313,67 +319,22 @@ namespace KW_Calendar.Views
                 tlpCalendar.RowStyles.Clear();
 
                 tlpCalendar.ColumnCount = 7;
-
-                DateTime firstDay = new DateTime(year, month, 1);
-                int startCol = (int)firstDay.DayOfWeek;
-                int daysInMonth = DateTime.DaysInMonth(year, month);
-
-                int rowCount = (int)Math.Ceiling((startCol + daysInMonth) / 7.0);
-                if (rowCount < 5)
-                    rowCount = 5;
-
-                tlpCalendar.RowCount = rowCount;
+                tlpCalendar.RowCount = CellPoolRows;
 
                 for (int i = 0; i < 7; i++)
                 {
                     tlpCalendar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / 7F));
                 }
-
-                for (int i = 0; i < rowCount; i++)
+                for (int i = 0; i < CellPoolRows; i++)
                 {
-                    tlpCalendar.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / rowCount));
+                    tlpCalendar.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / CellPoolRows));
                 }
 
-                int day = 1;
-
-                for (int row = 0; row < rowCount; row++)
+                for (int i = 0; i < CellPoolSize; i++)
                 {
-                    for (int col = 0; col < 7; col++)
-                    {
-                        RoundedPanel cell;
-
-                        if (row == 0 && col < startCol)
-                        {
-                            cell = CreateEmptyDayCell();
-                        }
-                        else if (day <= daysInMonth)
-                        {
-                            DateTime today = DateTime.Today;
-
-                            bool isToday =
-                                today.Year == FixedYear &&
-                                today.Month == month &&
-                                today.Day == day;
-
-                            /*현 코드 내에 sample데이터만 사용하게 됨 -> Present에서 주는 데이터 사용하게*/
-                            DateOnly date = new DateOnly(year, month, day);
-
-                            if (!eventsByDay.TryGetValue(date, out var dayEvents))
-                            {
-                                dayEvents = new List<Event>();
-                            }
-
-                            cell = CreateDayCell(day, dayEvents, isToday);
-                            day++;
-                            //
-                        }
-                        else
-                        {
-                            cell = CreateEmptyDayCell();
-                        }
-
-                        tlpCalendar.Controls.Add(cell, col, row);
-                    }
+                    var dayCell = new DayCell(this);
+                    cellPool[i] = dayCell;
+                    tlpCalendar.Controls.Add(dayCell.Panel, i % 7, i / 7);
                 }
             }
             finally
@@ -383,125 +344,253 @@ namespace KW_Calendar.Views
             }
         }
 
-        private RoundedPanel CreateEmptyDayCell()
+        private void BuildCalendar(int year, int month)
         {
-            return new RoundedPanel
+            tlpCalendar.SuspendLayout();
+            try
             {
-                Dock = DockStyle.Fill,
-                Margin = new Padding(3),
-                BorderRadius = 8,
-                FillColor = Color.White,
-                BorderColor = Color.FromArgb(243, 244, 246),
-                BorderSize = 1
-            };
+                DateTime firstDay = new DateTime(year, month, 1);
+                int startCol = (int)firstDay.DayOfWeek;
+                int daysInMonth = DateTime.DaysInMonth(year, month);
+
+                int rowCount = (int)Math.Ceiling((startCol + daysInMonth) / 7.0);
+                if (rowCount < 5)
+                    rowCount = 5;
+
+                if (rowCount != currentRowCount)
+                {
+                    tlpCalendar.RowStyles.Clear();
+                    for (int i = 0; i < CellPoolRows; i++)
+                    {
+                        float pct = i < rowCount ? 100F / rowCount : 0F;
+                        tlpCalendar.RowStyles.Add(new RowStyle(SizeType.Percent, pct));
+                    }
+                    currentRowCount = rowCount;
+                }
+
+                DateTime today = DateTime.Today;
+                int day = 1;
+
+                for (int i = 0; i < CellPoolSize; i++)
+                {
+                    int row = i / 7;
+                    int col = i % 7;
+                    var dayCell = cellPool[i];
+
+                    if (row >= rowCount)
+                    {
+                        dayCell.SetEmpty();
+                        continue;
+                    }
+
+                    if (row == 0 && col < startCol)
+                    {
+                        dayCell.SetEmpty();
+                        continue;
+                    }
+
+                    if (day > daysInMonth)
+                    {
+                        dayCell.SetEmpty();
+                        continue;
+                    }
+
+                    bool isToday =
+                        today.Year == FixedYear &&
+                        today.Month == month &&
+                        today.Day == day;
+
+                    DateOnly date = new DateOnly(year, month, day);
+                    if (!eventsByDay.TryGetValue(date, out var dayEvents))
+                    {
+                        dayEvents = Array.Empty<Event>();
+                    }
+
+                    Event? firstEvent = dayEvents.Count > 0 ? dayEvents[0] : null;
+                    Category? linkedCategory = firstEvent != null
+                        ? modelCategories.FirstOrDefault(c => c.Id == firstEvent.CategoryId)
+                        : null;
+
+                    bool isFavoriteEvent = firstEvent != null && (
+                        firstEvent.IsFavorited ||
+                        (linkedCategory != null && linkedCategory.IsFavorited));
+
+                    dayCell.SetDay(
+                        day,
+                        isToday,
+                        firstEvent,
+                        linkedCategory,
+                        isFavoriteEvent);
+
+                    day++;
+                }
+            }
+            finally
+            {
+                tlpCalendar.ResumeLayout(false);
+                tlpCalendar.PerformLayout();
+            }
         }
 
-        private RoundedPanel CreateDayCell(int day, IReadOnlyList<Event> dayEvents, bool isToday)
-        {//IReadOnlyList<Event> dayEvents 로 수정
-            RoundedPanel cell = new RoundedPanel
-            {
-                Dock = DockStyle.Fill,
-                Margin = new Padding(3),
-                BorderRadius = 8,
-                FillColor = Color.White,
-                BorderColor = Color.FromArgb(243, 244, 246),
-                BorderSize = 1
-            };
+        private sealed class DayCell
+        {
+            private static readonly Color EmptyBorder = Color.FromArgb(243, 244, 246);
+            private static readonly Color DayLabelFore = Color.FromArgb(31, 41, 55);
+            private static readonly Color TodayBadgeFill = Color.FromArgb(190, 24, 73);
 
-            if (isToday)
+            private readonly CalendarView _owner;
+            public RoundedPanel Panel { get; }
+            private readonly Label _dayLabel;
+            private readonly RoundedPanel _badge;
+            private readonly Label _badgeText;
+            private readonly RoundedPanel _eventTag;
+            private readonly Label _eventLabel;
+
+            private int _currentEventId = -1;
+
+            public DayCell(CalendarView owner)
             {
-                RoundedPanel badge = new RoundedPanel
+                _owner = owner;
+
+                Panel = new RoundedPanel
+                {
+                    Dock = DockStyle.Fill,
+                    Margin = new Padding(3),
+                    BorderRadius = 8,
+                    FillColor = Color.White,
+                    BorderColor = EmptyBorder,
+                    BorderSize = 1
+                };
+
+                _dayLabel = new Label
+                {
+                    Dock = DockStyle.Top,
+                    Height = 34,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    ForeColor = DayLabelFore,
+                    BackColor = Color.Transparent,
+                    Font = FontDayLabel,
+                    Visible = false
+                };
+
+                _badge = new RoundedPanel
                 {
                     Size = new Size(32, 32),
                     BorderRadius = 16,
-                    FillColor = Color.FromArgb(190, 24, 73),
-                    BorderSize = 0
+                    FillColor = TodayBadgeFill,
+                    BorderSize = 0,
+                    Visible = false
                 };
 
-                Label badgeText = new Label
+                _badgeText = new Label
                 {
-                    Text = day.ToString(),
                     Dock = DockStyle.Fill,
                     TextAlign = ContentAlignment.MiddleCenter,
                     ForeColor = Color.White,
                     BackColor = Color.Transparent,
                     Font = FontDayLabel
                 };
+                _badge.Controls.Add(_badgeText);
 
-                badge.Controls.Add(badgeText);
-                cell.Controls.Add(badge);
-
-                cell.Resize += (s, e) =>
-                {
-                    badge.Left = (cell.Width - badge.Width) / 2;
-                    badge.Top = 8;
-                };
-            }
-            else
-            {
-                Label dayLabel = new Label
-                {
-                    Text = day.ToString(),
-                    Dock = DockStyle.Top,
-                    Height = 34,
-                    TextAlign = ContentAlignment.MiddleCenter,
-                    ForeColor = Color.FromArgb(31, 41, 55),
-                    BackColor = Color.Transparent,
-                    Font = FontDayLabel
-                };
-
-                cell.Controls.Add(dayLabel);
-            }
-
-            //이벤트 if문 수정
-            if (dayEvents.Count > 0)
-            {
-                Event firstEvent = dayEvents[0];
-
-                Category? linkedCategory = modelCategories
-                    .FirstOrDefault(c => c.Id == firstEvent.CategoryId);
-
-                bool isFavoriteEvent =
-                    firstEvent.IsFavorited ||
-                    (linkedCategory != null && linkedCategory.IsFavorited);
-
-                RoundedPanel tag = new RoundedPanel
+                _eventTag = new RoundedPanel
                 {
                     Size = new Size(64, 20),
                     BorderRadius = 5,
-                    FillColor = GetCategoryBackColor(linkedCategory),
-                    BorderSize = 0
+                    BorderSize = 0,
+                    Cursor = Cursors.Hand,
+                    Visible = false
                 };
 
-                Label eventLabel = new Label
+                _eventLabel = new Label
                 {
-                    Text = isFavoriteEvent ? "★ " + ShortenTitle(firstEvent.Title) : ShortenTitle(firstEvent.Title),
                     Dock = DockStyle.Fill,
                     TextAlign = ContentAlignment.MiddleCenter,
-                    ForeColor = GetCategoryForeColor(linkedCategory),
                     BackColor = Color.Transparent,
-                    Font = FontEventTag
+                    Font = FontEventTag,
+                    Cursor = Cursors.Hand
                 };
+                _eventTag.Controls.Add(_eventLabel);
 
-                tag.Controls.Add(eventLabel);
+                _eventTag.Click += OnEventClick;
+                _eventLabel.Click += OnEventClick;
 
-                tag.Cursor = Cursors.Hand;
-                eventLabel.Cursor = Cursors.Hand;
+                Panel.Controls.Add(_dayLabel);
+                Panel.Controls.Add(_badge);
+                Panel.Controls.Add(_eventTag);
 
-                tag.Click += (s, e) => EventSelected?.Invoke(this, firstEvent.Id);
-                eventLabel.Click += (s, e) => EventSelected?.Invoke(this, firstEvent.Id);
-
-                cell.Controls.Add(tag);
-
-                cell.Resize += (s, e) =>
-                {
-                    tag.Left = (cell.Width - tag.Width) / 2;
-                    tag.Top = 42;
-                };
+                Panel.Resize += (s, e) => LayoutChildren();
             }
-            return cell;
 
+            private void OnEventClick(object? sender, EventArgs e)
+            {
+                if (_currentEventId >= 0)
+                    _owner.EventSelected?.Invoke(_owner, _currentEventId);
+            }
 
+            private void LayoutChildren()
+            {
+                if (_badge.Visible)
+                {
+                    _badge.Left = (Panel.Width - _badge.Width) / 2;
+                    _badge.Top = 8;
+                }
+                if (_eventTag.Visible)
+                {
+                    _eventTag.Left = (Panel.Width - _eventTag.Width) / 2;
+                    _eventTag.Top = 42;
+                }
+            }
+
+            public void SetEmpty()
+            {
+                _dayLabel.Visible = false;
+                _badge.Visible = false;
+                _eventTag.Visible = false;
+                _currentEventId = -1;
+            }
+
+            public void SetDay(
+                int day,
+                bool isToday,
+                Event? firstEvent,
+                Category? linkedCategory,
+                bool isFavoriteEvent)
+            {
+                string dayText = day.ToString();
+
+                if (isToday)
+                {
+                    _dayLabel.Visible = false;
+                    if (_badgeText.Text != dayText) _badgeText.Text = dayText;
+                    _badge.Visible = true;
+                }
+                else
+                {
+                    _badge.Visible = false;
+                    if (_dayLabel.Text != dayText) _dayLabel.Text = dayText;
+                    _dayLabel.Visible = true;
+                }
+
+                if (firstEvent != null)
+                {
+                    string title = isFavoriteEvent
+                        ? "★ " + _owner.ShortenTitle(firstEvent.Title)
+                        : _owner.ShortenTitle(firstEvent.Title);
+
+                    if (_eventLabel.Text != title) _eventLabel.Text = title;
+                    _eventLabel.ForeColor = _owner.GetCategoryForeColor(linkedCategory);
+                    _eventTag.FillColor = _owner.GetCategoryBackColor(linkedCategory);
+                    _currentEventId = firstEvent.Id;
+                    _eventTag.Visible = true;
+                }
+                else
+                {
+                    _eventTag.Visible = false;
+                    _currentEventId = -1;
+                }
+
+                LayoutChildren();
+            }
         }
         //보조 메서드 추가
         private string ShortenTitle(string title)

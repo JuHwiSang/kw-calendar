@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="KW-Calendar/KW-Calendar.csproj" />
+  <Project Path="KW-Calendar.Tests/KW-Calendar.Tests.csproj" />
 </Solution>

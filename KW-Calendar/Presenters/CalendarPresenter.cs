@@ -151,7 +151,7 @@ public class CalendarPresenter
         var detailView = new EventDetailView();
         var detailPresenter = new EventDetailPresenter(detailView, _eventService);
 
-        await detailPresenter.InitializeAsync(eventId);
+        detailPresenter.Initialize(eventId);
 
         if (_view is System.Windows.Forms.Form owner)
         {

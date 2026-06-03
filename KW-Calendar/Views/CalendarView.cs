@@ -356,8 +356,11 @@ namespace KW_Calendar.Views
             }
         }
 
+        private const int WM_SETREDRAW = 0x000B;
+
         private void BuildCalendar(int year, int month)
         {
+            SendMessage(tlpCalendar.Handle, WM_SETREDRAW, 0, 0);
             tlpCalendar.SuspendLayout();
             try
             {
@@ -441,6 +444,8 @@ namespace KW_Calendar.Views
             {
                 tlpCalendar.ResumeLayout(false);
                 tlpCalendar.PerformLayout();
+                SendMessage(tlpCalendar.Handle, WM_SETREDRAW, 1, 0);
+                tlpCalendar.Invalidate(true);
             }
         }
 

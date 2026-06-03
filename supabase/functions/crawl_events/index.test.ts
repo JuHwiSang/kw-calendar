@@ -56,7 +56,7 @@ Deno.test("crawlKwNotice: saves new notice items", async () => {
   }
 
   const { db, upsertLog } = createMockDb()
-  await crawlKwNotice(db, mockFetch as typeof fetch, 0)
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0 })
 
   assertEquals(upsertLog.length, 1)
   assertEquals((upsertLog[0] as any).source_type, "kw_notice")
@@ -83,7 +83,7 @@ Deno.test("crawlKwNotice: skips notice when content area is missing", async () =
   }
 
   const { db, upsertLog } = createMockDb()
-  await crawlKwNotice(db, mockFetch as typeof fetch, 0)
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0 })
 
   assertEquals(upsertLog.length, 0)
 })
@@ -102,7 +102,7 @@ Deno.test("crawlKwNotice: skips already-saved notice items", async () => {
     Promise.resolve(new Response(listHtml, { status: 200 }))
 
   const { db, upsertLog } = createMockDb(new Set(["52518"]))
-  await crawlKwNotice(db, mockFetch as typeof fetch, 0)
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0 })
 
   assertEquals(upsertLog.length, 0)
 })
@@ -124,10 +124,105 @@ Deno.test("crawlKwNotice: stops pagination when page has no new items", async ()
   }
 
   const { db } = createMockDb(new Set(["99999"]))
-  await crawlKwNotice(db, mockFetch as typeof fetch, 0)
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0 })
 
   // Stops after page 1 (1 list fetch, 0 detail fetches)
   assertEquals(fetchCallCount, 1)
+})
+
+// ---------------------------------------------------------------------------
+// crawlKwNotice — error paths
+// ---------------------------------------------------------------------------
+
+Deno.test("crawlKwNotice: retries and saves item after initial HTTP 500", async () => {
+  const listHtml = `
+    <div class="board-list-box">
+      <ul>
+        <li>
+          <a href="/ko/life/notice.jsp?BoardMode=view&DUID=11111">공지</a>
+        </li>
+      </ul>
+    </div>`
+  const detailHtml = `<div class="board-view-box"><p>내용</p></div>`
+
+  let callCount = 0
+  const mockFetch = (): Promise<Response> => {
+    callCount++
+    // 첫 번째 목록 fetch는 500, retry 후 성공
+    if (callCount === 1) return Promise.resolve(new Response("", { status: 500 }))
+    if (callCount === 2) return Promise.resolve(new Response(listHtml, { status: 200 }))
+    if (callCount === 3) return Promise.resolve(new Response(detailHtml, { status: 200 }))
+    return Promise.resolve(new Response("", { status: 200 }))
+  }
+
+  const { db, upsertLog } = createMockDb()
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0, retryBaseDelayMs: 0 })
+
+  assertEquals(upsertLog.length, 1)
+  assertEquals((upsertLog[0] as any).source_id, "11111")
+})
+
+Deno.test("crawlKwNotice: skips page and continues after exhausting all retries", async () => {
+  // page 1은 항상 500 (maxRetries=3, 총 4회 시도 후 throw)
+  // continue 시 page 2 목록을 1회 이상 추가 fetch → fetchCallCount > 4
+  // break 시 page 2 fetch 없이 종료 → fetchCallCount === 4
+  const emptyListHtml = `<div class="board-list-box"><ul></ul></div>`
+
+  let fetchCallCount = 0
+  const mockFetch = (url: string): Promise<Response> => {
+    fetchCallCount++
+    if (url.includes("tpage=1")) return Promise.resolve(new Response("", { status: 500 }))
+    return Promise.resolve(new Response(emptyListHtml, { status: 200 }))
+  }
+
+  const { db } = createMockDb()
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0, retryBaseDelayMs: 0 })
+
+  // page 1: 4회 시도 실패, page 2: emptyListHtml → break = 총 5회
+  assertEquals(fetchCallCount, 5)
+})
+
+Deno.test("crawlKwNotice: skips page and continues on timeout (AbortError)", async () => {
+  const emptyListHtml = `<div class="board-list-box"><ul></ul></div>`
+
+  let fetchCallCount = 0
+  const mockFetch = (url: string): Promise<Response> => {
+    fetchCallCount++
+    if (url.includes("tpage=1")) return Promise.reject(new DOMException("The operation was aborted.", "AbortError"))
+    return Promise.resolve(new Response(emptyListHtml, { status: 200 }))
+  }
+
+  const { db } = createMockDb()
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0, retryBaseDelayMs: 0 })
+
+  // page 1: 4회 시도 실패, page 2: emptyListHtml → break = 총 5회
+  assertEquals(fetchCallCount, 5)
+})
+
+Deno.test("crawlKwNotice: saves all items when skipExisting=false (full crawl mode)", async () => {
+  const listHtml = `
+    <div class="board-list-box">
+      <ul>
+        <li>
+          <a href="/ko/life/notice.jsp?BoardMode=view&DUID=52518">공지</a>
+        </li>
+      </ul>
+    </div>`
+  const detailHtml = `<div class="board-view-box"><p>내용</p></div>`
+
+  let callCount = 0
+  const mockFetch = (): Promise<Response> => {
+    callCount++
+    if (callCount === 1) return Promise.resolve(new Response(listHtml, { status: 200 }))
+    if (callCount === 2) return Promise.resolve(new Response(detailHtml, { status: 200 }))
+    return Promise.resolve(new Response("", { status: 200 }))
+  }
+
+  // source_id "52518"이 이미 존재 — skipExisting=true면 저장 안 함
+  const { db, upsertLog } = createMockDb(new Set(["52518"]))
+  await crawlKwNotice({ db, fetchFn: mockFetch as typeof fetch, throttleMs: 0, skipExisting: false, retryBaseDelayMs: 0 })
+
+  assertEquals(upsertLog.length, 1)
 })
 
 // ---------------------------------------------------------------------------
@@ -149,9 +244,26 @@ Deno.test("crawlKwAcademic: saves single-day and range-date schedule items", asy
   const { db, upsertLog } = createMockDb()
   await crawlKwAcademic(db, mockFetch as typeof fetch)
 
-  // 2 items × 2 months = 4 upserts
-  assertEquals(upsertLog.length, 4)
+  // 2 items × 6 months = 12 upserts
+  assertEquals(upsertLog.length, 12)
   assertEquals((upsertLog[0] as any).source_type, "kw_academic")
+})
+
+Deno.test("crawlKwAcademic: generates correct 6-month targets with year boundary in November", async () => {
+  // 11월 기준: 11, 12, 1, 2, 3, 4 — 연도 경계(12→1) 처리 검증
+  const months: number[] = []
+  const mockFetch = (_url: string, options?: RequestInit): Promise<Response> => {
+    const body = (options as any)?.body as string ?? ""
+    const params = new URLSearchParams(body)
+    const month = Number(params.get("sm"))
+    if (!isNaN(month)) months.push(month)
+    return Promise.resolve(new Response(`<div class="schedule-this-monthlist"><ul></ul></div>`, { status: 200 }))
+  }
+
+  const { db } = createMockDb()
+  await crawlKwAcademic(db, mockFetch as typeof fetch, new Date(2026, 10, 1))
+
+  assertEquals(months, [11, 12, 1, 2, 3, 4])
 })
 
 Deno.test("crawlKwAcademic: sourceId includes index and is space-free", async () => {
@@ -183,7 +295,7 @@ Deno.test("crawlInstagram: skips when credentials are missing", async () => {
   const { db, upsertLog } = createMockDb()
   const mockFetch = (): Promise<Response> => Promise.reject(new Error("should not be called"))
 
-  await crawlInstagram(db, mockFetch as typeof fetch, undefined, undefined)
+  await crawlInstagram({ db, fetchFn: mockFetch as typeof fetch, igBusinessId: undefined, igAccessToken: undefined })
   assertEquals(upsertLog.length, 0)
 })
 

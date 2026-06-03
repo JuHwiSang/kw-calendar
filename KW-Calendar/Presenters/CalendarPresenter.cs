@@ -32,7 +32,7 @@ public class CalendarPresenter
         // _view.DaySelected += OnDaySelected;              // TODO: 날짜 선택 (우선순위 낮음)
         _view.EventSelected += OnEventSelected;
         // _view.ShowFavoritesOnlyChanged += OnShowFavoritesOnlyChanged;  // TODO: 즐겨찾기만 보기 필터 (우선순위 낮음)
-        // _view.SyncRequested += OnSyncRequested;          // TODO: 수동 동기화 버튼 (우선순위 낮음)
+        _view.SyncRequested += OnSyncRequested;          
         _view.EventFavoriteToggleRequested += OnEventFavoriteToggleRequested;
         _view.CategoryFavoriteToggleRequested += OnCategoryFavoriteToggleRequested;
 
@@ -60,9 +60,9 @@ public class CalendarPresenter
     //     await LoadEventsForCurrentMonthAsync();
     // }
 
-    // TODO: 수동 동기화 버튼 (우선순위 낮음)
-    // private async void OnSyncRequested(object? sender, EventArgs e)
-    //     => await SyncAndRefreshAsync();
+    
+     private async void OnSyncRequested(object? sender, EventArgs e)
+        => await SyncAndRefreshAsync();
 
     // --- 즐겨찾기 ---
 

@@ -116,6 +116,7 @@ namespace KW_Calendar.Views
 
         public event EventHandler PreviousMonthRequested;
         public event EventHandler NextMonthRequested;
+        public event EventHandler SyncRequested;
         public event EventHandler<int> EventSelected;
         public event EventHandler<int> EventFavoriteToggleRequested;
         public event EventHandler<int> CategoryFavoriteToggleRequested;

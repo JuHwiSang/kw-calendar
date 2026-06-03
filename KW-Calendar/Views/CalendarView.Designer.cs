@@ -7,7 +7,7 @@ namespace KW_Calendar.Views
     {
         private System.ComponentModel.IContainer components = null;
 
-        private Panel mainCard;
+        private ResizablePanel mainCard;
         private Panel leftArea;
         private Panel sideArea;
         private Panel divider;
@@ -81,7 +81,7 @@ namespace KW_Calendar.Views
         {
             components = new System.ComponentModel.Container();
 
-            mainCard = new Panel();
+            mainCard = new ResizablePanel();
             leftArea = new Panel();
             sideArea = new Panel();
             divider = new Panel();
@@ -162,76 +162,76 @@ namespace KW_Calendar.Views
             //
             // mainCard
             //
-            mainCard.Location = new Point(0, 44);
-            mainCard.Size = new Size(832, 624);
+            mainCard.Dock = DockStyle.Fill;
             mainCard.BackColor = Color.White;
+            mainCard.Padding = new Padding(6);
             mainCard.Name = "mainCard";
 
-            // 
-            // leftArea
-            // 
-            leftArea.BackColor = Color.White;
-            leftArea.Location = new Point(0, 0);
-            leftArea.Size = new Size(588, 624);
-            leftArea.Name = "leftArea";
-
-            // 
-            // sideArea
-            // 
+            //
+            // sideArea (오른쪽 244 고정)
+            //
+            sideArea.Dock = DockStyle.Right;
+            sideArea.Width = 244;
             sideArea.BackColor = Color.FromArgb(249, 250, 251);
-            sideArea.Location = new Point(588, 0);
-            sideArea.Size = new Size(244, 624);
             sideArea.Name = "sideArea";
 
-            // 
-            // divider
-            // 
+            //
+            // divider (1px 세로선)
+            //
+            divider.Dock = DockStyle.Right;
+            divider.Width = 1;
             divider.BackColor = Color.FromArgb(229, 231, 235);
-            divider.Location = new Point(587, 0);
-            divider.Size = new Size(1, 624);
             divider.Name = "divider";
+
+            //
+            // leftArea (나머지 채움)
+            //
+            leftArea.Dock = DockStyle.Fill;
+            leftArea.BackColor = Color.White;
+            leftArea.Padding = new Padding(26, 28, 26, 6);
+            leftArea.Name = "leftArea";
 
             // 
             // panelHeader
             // 
             panelHeader.BackColor = Color.White;
-            panelHeader.Location = new Point(26, 28);
-            panelHeader.Size = new Size(535, 58);
+            panelHeader.Dock = DockStyle.Top;
+            panelHeader.Height = 58;
             panelHeader.Name = "panelHeader";
 
-            // 
+            //
             // btnPrev
-            // 
-            btnPrev.Location = new Point(14, 7);
-            btnPrev.Size = new Size(42, 42);
+            //
+            btnPrev.Dock = DockStyle.Left;
+            btnPrev.Width = 56;
             btnPrev.Name = "btnPrev";
             btnPrev.Text = "‹";
             btnPrev.TextAlign = ContentAlignment.MiddleCenter;
             btnPrev.BackColor = Color.White;
             btnPrev.Cursor = Cursors.Hand;
 
-            // 
+            //
             // lblMonthYear
-            // 
-            lblMonthYear.Location = new Point(143, 7);
-            lblMonthYear.Size = new Size(250, 44);
+            //
+            lblMonthYear.Dock = DockStyle.Fill;
             lblMonthYear.Name = "lblMonthYear";
             lblMonthYear.Text = "2026년 5월";
             lblMonthYear.TextAlign = ContentAlignment.MiddleCenter;
 
-            // 
+            //
             // btnNext
-            // 
-            btnNext.Location = new Point(479, 7);
-            btnNext.Size = new Size(42, 42);
+            //
+            btnNext.Dock = DockStyle.Right;
+            btnNext.Width = 56;
             btnNext.Name = "btnNext";
             btnNext.Text = "›";
             btnNext.TextAlign = ContentAlignment.MiddleCenter;
             btnNext.BackColor = Color.White;
             btnNext.Cursor = Cursors.Hand;
 
-            panelHeader.Controls.Add(btnPrev);
+            // Add 순서: Fill인 lblMonthYear를 가장 먼저(마지막에 dock 처리되어 남은 공간 차지).
             panelHeader.Controls.Add(lblMonthYear);
+            panelHeader.Controls.Add(btnPrev);
             panelHeader.Controls.Add(btnNext);
 
             // 
@@ -240,8 +240,8 @@ namespace KW_Calendar.Views
             tlpDaysOfWeek.BackColor = Color.White;
             tlpDaysOfWeek.ColumnCount = 7;
             tlpDaysOfWeek.RowCount = 1;
-            tlpDaysOfWeek.Location = new Point(26, 96);
-            tlpDaysOfWeek.Size = new Size(535, 30);
+            tlpDaysOfWeek.Dock = DockStyle.Top;
+            tlpDaysOfWeek.Height = 30;
             tlpDaysOfWeek.Name = "tlpDaysOfWeek";
 
             for (int i = 0; i < 7; i++)
@@ -275,8 +275,7 @@ namespace KW_Calendar.Views
             tlpCalendar.BackColor = Color.White;
             tlpCalendar.ColumnCount = 7;
             tlpCalendar.RowCount = 5;
-            tlpCalendar.Location = new Point(26, 136);
-            tlpCalendar.Size = new Size(535, 482);
+            tlpCalendar.Dock = DockStyle.Fill;
             tlpCalendar.Name = "tlpCalendar";
 
             // 
@@ -628,11 +627,16 @@ namespace KW_Calendar.Views
             detailPanel.Controls.Add(detailScrollTrack);
             detailPanel.Controls.Add(detailHeader);
 
-            leftArea.Controls.Add(panelHeader);
-            leftArea.Controls.Add(tlpDaysOfWeek);
+            // Dock 순서: 먼저 add된 게 먼저 자리잡음.
+            // Fill인 tlpCalendar는 가장 마지막에 add해서 남은 공간을 채우게 한다.
             leftArea.Controls.Add(tlpCalendar);
+            leftArea.Controls.Add(tlpDaysOfWeek);
+            leftArea.Controls.Add(panelHeader);
             leftArea.Controls.Add(detailPanel);
 
+            // Dock 처리는 add 역순(나중에 add된 게 먼저 자리잡음).
+            // Fill인 leftArea를 가장 먼저 add → 마지막에 처리되며 남은 공간 차지.
+            // sideArea(Right)/divider(Right)는 마지막 add → 먼저 처리되어 우측에 박힘.
             mainCard.Controls.Add(leftArea);
             mainCard.Controls.Add(divider);
             mainCard.Controls.Add(sideArea);

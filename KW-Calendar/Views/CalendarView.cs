@@ -183,11 +183,6 @@ namespace KW_Calendar.Views
             //BuildCalendar(currentYear, currentMonth);
             //BuildCategoryList();
             //UpdateArrowState();
-
-            EnableFormDrag(mainCard);
-            EnableFormDrag(leftArea);
-            EnableFormDrag(sideArea);
-            EnableFormDrag(panelHeader);
         }
 
         private void ApplyCalendarDesign()
@@ -304,10 +299,29 @@ namespace KW_Calendar.Views
             btnNext.Cursor = Cursors.Hand;
         }
 
+        private const int ResizeBorder = 6;
+
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
             WindowHelpers.ApplyRoundedCorners(Handle);
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WindowHelpers.WM_NCHITTEST)
+            {
+                int x = (short)(m.LParam.ToInt32() & 0xFFFF);
+                int y = (short)((m.LParam.ToInt32() >> 16) & 0xFFFF);
+                var pt = PointToClient(new Point(x, y));
+                var hit = WindowHelpers.GetResizeHitCode(this, pt, ResizeBorder);
+                if (hit.HasValue)
+                {
+                    m.Result = (IntPtr)hit.Value;
+                    return;
+                }
+            }
+            base.WndProc(ref m);
         }
 
         private void InitializeTitleBar()
@@ -922,21 +936,6 @@ namespace KW_Calendar.Views
         //CalendarEventInfo, CategoryInfo 클래스도 삭제
 
         [DllImport("user32.dll")]
-        private static extern bool ReleaseCapture();
-
-        [DllImport("user32.dll")]
         private static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
-
-        private void EnableFormDrag(Control control)
-        {
-            control.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    ReleaseCapture();
-                    SendMessage(Handle, 0xA1, 0x2, 0);
-                }
-            };
-        }
     }
 }

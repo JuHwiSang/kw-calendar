@@ -369,8 +369,8 @@ namespace KW_Calendar.Views
                 int daysInMonth = DateTime.DaysInMonth(year, month);
 
                 int rowCount = (int)Math.Ceiling((startCol + daysInMonth) / 7.0);
-                if (rowCount < 5)
-                    rowCount = 5;
+                if (rowCount < 4)
+                    rowCount = 4;
 
                 if (rowCount != currentRowCount)
                 {

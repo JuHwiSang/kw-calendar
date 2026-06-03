@@ -12,6 +12,10 @@ namespace KW_Calendar.Views
         private Color borderColor = Color.FromArgb(229, 231, 235);
         private int borderSize = 1;
         private Color fillColor = Color.White;
+        private bool enableRegion = false;
+
+        private SolidBrush? cachedBrush;
+        private Pen? cachedPen;
 
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -34,6 +38,8 @@ namespace KW_Calendar.Views
             set
             {
                 borderColor = value;
+                cachedPen?.Dispose();
+                cachedPen = null;
                 Invalidate();
             }
         }
@@ -46,6 +52,8 @@ namespace KW_Calendar.Views
             set
             {
                 borderSize = value;
+                cachedPen?.Dispose();
+                cachedPen = null;
                 Invalidate();
             }
         }
@@ -58,7 +66,28 @@ namespace KW_Calendar.Views
             set
             {
                 fillColor = value;
+                cachedBrush?.Dispose();
+                cachedBrush = null;
                 Invalidate();
+            }
+        }
+
+        /// <summary>
+        /// true면 GDI Region을 적용해 컨트롤 hit-test와 자식 클리핑이 둥근 모양을 따른다.
+        /// 비용이 크므로 기본은 false. OnPaint 자체는 EnableRegion과 무관하게 둥글게 그린다.
+        /// </summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool EnableRegion
+        {
+            get => enableRegion;
+            set
+            {
+                enableRegion = value;
+                if (!enableRegion)
+                    Region = null;
+                else
+                    UpdateRegion();
             }
         }
 
@@ -85,31 +114,45 @@ namespace KW_Calendar.Views
 
             Rectangle rect = new Rectangle(0, 0, Width - 1, Height - 1);
 
-            using (GraphicsPath path = GetRoundedPath(rect, BorderRadius))
-            using (SolidBrush brush = new SolidBrush(FillColor))
-            using (Pen pen = new Pen(BorderColor, BorderSize))
+            cachedBrush ??= new SolidBrush(fillColor);
+            using (GraphicsPath path = GetRoundedPath(rect, borderRadius))
             {
-                e.Graphics.FillPath(brush, path);
+                e.Graphics.FillPath(cachedBrush, path);
 
-                if (BorderSize > 0)
-                    e.Graphics.DrawPath(pen, path);
+                if (borderSize > 0)
+                {
+                    cachedPen ??= new Pen(borderColor, borderSize);
+                    e.Graphics.DrawPath(cachedPen, path);
+                }
             }
         }
 
         protected override void OnResize(EventArgs eventargs)
         {
             base.OnResize(eventargs);
-            UpdateRegion();
+            if (enableRegion)
+                UpdateRegion();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                cachedBrush?.Dispose();
+                cachedPen?.Dispose();
+                cachedBrush = null;
+                cachedPen = null;
+            }
+            base.Dispose(disposing);
         }
 
         private void UpdateRegion()
         {
-            if (Width <= 0 || Height <= 0)
-                return;
+            if (!enableRegion) return;
+            if (Width <= 0 || Height <= 0) return;
 
             Rectangle rect = new Rectangle(0, 0, Width, Height);
-
-            using (GraphicsPath path = GetRoundedPath(rect, BorderRadius))
+            using (GraphicsPath path = GetRoundedPath(rect, borderRadius))
             {
                 Region = new Region(path);
             }

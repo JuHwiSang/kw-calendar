@@ -34,7 +34,8 @@ namespace KW_Calendar.Views
             // 버튼은 우측부터 Dock.Right로 깔린다. Add 순서대로 우→좌.
             _btnClose = MakeButton("✕", isClose: true);
             _btnMax = MakeButton("□", isClose: false);
-            _btnMin = MakeButton("─", isClose: false);
+            _btnMin = MakeButton("–", isClose: false);
+            _btnMin.Padding = new Padding(0, 0, 0, 4);
 
             _btnClose.Click += (s, e) => OwnerForm?.Close();
             _btnMax.Click += (s, e) => ToggleMaximize();

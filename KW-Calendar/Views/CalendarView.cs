@@ -12,6 +12,15 @@ namespace KW_Calendar.Views
     {
         private const int FixedYear = 2026;
 
+        private static readonly Font FontMonthTitle = new("맑은 고딕", 16F, FontStyle.Bold);
+        private static readonly Font FontCategoryTitle = new("맑은 고딕", 11F, FontStyle.Bold);
+        private static readonly Font FontDayLabel = new("맑은 고딕", 10F, FontStyle.Bold);
+        private static readonly Font FontRadio = new("맑은 고딕", 9.5F, FontStyle.Bold);
+        private static readonly Font FontEmptyLabel = new("맑은 고딕", 9F, FontStyle.Bold);
+        private static readonly Font FontEventTag = new("맑은 고딕", 7.5F, FontStyle.Bold);
+        private static readonly Font FontArrow = new("Arial", 28F, FontStyle.Regular);
+        private static readonly Font FontStar = new("Segoe UI Symbol", 13F, FontStyle.Regular);
+
         private int currentYear = FixedYear;
         private int currentMonth = DateTime.Today.Year == FixedYear ? DateTime.Today.Month : 1;
 
@@ -182,7 +191,7 @@ namespace KW_Calendar.Views
 
             sideArea.BackColor = Color.FromArgb(249, 250, 251);
 
-            lblMonthYear.Font = new Font("맑은 고딕", 16F, FontStyle.Bold);
+            lblMonthYear.Font = FontMonthTitle;
             lblMonthYear.ForeColor = Color.FromArgb(136, 19, 55);
 
             btnPrev.Text = "‹";
@@ -204,7 +213,7 @@ namespace KW_Calendar.Views
 
             foreach (Label label in dayLabels)
             {
-                label.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
+                label.Font = FontDayLabel;
                 label.ForeColor = Color.FromArgb(107, 114, 128);
                 label.BackColor = Color.White;
                 label.TextAlign = ContentAlignment.MiddleCenter;
@@ -216,7 +225,7 @@ namespace KW_Calendar.Views
             StyleRadioButton(rbFav);
             StyleRadioButton(rbAll);
 
-            lblCategoryTitle.Font = new Font("맑은 고딕", 11F, FontStyle.Bold);
+            lblCategoryTitle.Font = FontCategoryTitle;
             lblCategoryTitle.ForeColor = Color.FromArgb(31, 41, 55);
 
             UpdateMonthTitle();
@@ -226,14 +235,14 @@ namespace KW_Calendar.Views
         {
             button.BackColor = Color.White;
             button.ForeColor = Color.FromArgb(107, 114, 128);
-            button.Font = new Font("Arial", 28F, FontStyle.Regular);
+            button.Font = FontArrow;
             button.TextAlign = ContentAlignment.MiddleCenter;
             button.Cursor = Cursors.Hand;
         }
 
         private void StyleRadioButton(RadioButton radioButton)
         {
-            radioButton.Font = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
+            radioButton.Font = FontRadio;
             radioButton.ForeColor = Color.FromArgb(31, 41, 55);
             radioButton.BackColor = Color.FromArgb(249, 250, 251);
             radioButton.Cursor = Cursors.Hand;
@@ -416,7 +425,7 @@ namespace KW_Calendar.Views
                     TextAlign = ContentAlignment.MiddleCenter,
                     ForeColor = Color.White,
                     BackColor = Color.Transparent,
-                    Font = new Font("맑은 고딕", 10F, FontStyle.Bold)
+                    Font = FontDayLabel
                 };
 
                 badge.Controls.Add(badgeText);
@@ -438,7 +447,7 @@ namespace KW_Calendar.Views
                     TextAlign = ContentAlignment.MiddleCenter,
                     ForeColor = Color.FromArgb(31, 41, 55),
                     BackColor = Color.Transparent,
-                    Font = new Font("맑은 고딕", 10F, FontStyle.Bold)
+                    Font = FontDayLabel
                 };
 
                 cell.Controls.Add(dayLabel);
@@ -471,7 +480,7 @@ namespace KW_Calendar.Views
                     TextAlign = ContentAlignment.MiddleCenter,
                     ForeColor = GetCategoryForeColor(linkedCategory),
                     BackColor = Color.Transparent,
-                    Font = new Font("맑은 고딕", 7.5F, FontStyle.Bold)
+                    Font = FontEventTag
                 };
 
                 tag.Controls.Add(eventLabel);
@@ -538,7 +547,7 @@ namespace KW_Calendar.Views
                         Width = 198,
                         Height = 40,
                         ForeColor = Color.FromArgb(156, 163, 175),
-                        Font = new Font("맑은 고딕", 9F, FontStyle.Bold),
+                        Font = FontEmptyLabel,
                         TextAlign = ContentAlignment.MiddleCenter
                     };
 
@@ -582,7 +591,7 @@ namespace KW_Calendar.Views
                 Text = category.Name,
                 ForeColor = Color.FromArgb(31, 41, 55),
                 BackColor = Color.Transparent,
-                Font = new Font("맑은 고딕", 9.5F, FontStyle.Bold),
+                Font = FontRadio,
                 Location = new Point(42, 9),
                 Size = new Size(122, 22),
                 TextAlign = ContentAlignment.MiddleLeft
@@ -609,7 +618,7 @@ namespace KW_Calendar.Views
                 Size = new Size(22, 28),
                 TextAlign = ContentAlignment.MiddleCenter,
                 BackColor = Color.Transparent,
-                Font = new Font("Segoe UI Symbol", 13F, FontStyle.Regular),
+                Font = FontStar,
                 Cursor = canToggle ? Cursors.Hand : Cursors.Default
             };
 

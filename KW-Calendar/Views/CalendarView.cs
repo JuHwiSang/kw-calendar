@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using KW_Calendar.Models;
@@ -309,8 +310,19 @@ namespace KW_Calendar.Views
             btnNext.Cursor = currentMonth >= 12 ? Cursors.Default : Cursors.Hand;
         }
 
+        private static void EnableDoubleBuffered(Control control)
+        {
+            // TableLayoutPanel은 DoubleBuffered가 protected라 리플렉션으로 켠다.
+            // 셀 단위 페인트가 누적돼 "드르륵" 그려지는 현상을 막기 위함.
+            typeof(Control)
+                .GetProperty("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.SetValue(control, true);
+        }
+
         private void InitializeCellPool()
         {
+            EnableDoubleBuffered(tlpCalendar);
+
             tlpCalendar.SuspendLayout();
             try
             {

@@ -539,6 +539,9 @@ namespace KW_Calendar.Views
                 Panel.Resize += (s, e) => LayoutChildren();
             }
 
+            // TODO: 셀 높이가 부족해 표시 못한 이벤트가 있으면 마지막 칸을 "+N more"로 대체.
+            // 현재는 그냥 잘려서 숨겨짐. 구현 시: maxVisible로 잘리는 시점에 잔여 개수를 계산해
+            // 마지막 태그를 "+N" 표시로 바꾸고 클릭 시 (예: 그 날짜 상세 패널 열기) 처리.
             private void LayoutChildren()
             {
                 int w = Panel.Width;

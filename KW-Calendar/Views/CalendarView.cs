@@ -150,6 +150,7 @@ namespace KW_Calendar.Views
             ApplyCalendarDesign();
             InitializeCellPool();
             InitializeTitleBar();
+            EnableDoubleBuffered(panelHeader);
 
             rbAll.CheckedChanged += FilterRadio_CheckedChanged;
             rbFav.CheckedChanged += FilterRadio_CheckedChanged;

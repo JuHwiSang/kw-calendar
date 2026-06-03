@@ -296,18 +296,14 @@ namespace KW_Calendar.Views
             lblMonthYear.Text = $"{currentYear}년 {currentMonth}월";
         }
 
+        // TODO: 화살표가 disabled되는 케이스가 영영 없다면 이 메서드와 호출부 3곳을
+        // 제거하고 StyleArrowButton에서 한 번만 세팅하도록 정리.
         private void UpdateArrowState()
         {
-            btnPrev.ForeColor = currentMonth <= 1
-                ? Color.FromArgb(209, 213, 219)
-                : Color.FromArgb(107, 114, 128);
-
-            btnNext.ForeColor = currentMonth >= 12
-                ? Color.FromArgb(209, 213, 219)
-                : Color.FromArgb(107, 114, 128);
-
-            btnPrev.Cursor = currentMonth <= 1 ? Cursors.Default : Cursors.Hand;
-            btnNext.Cursor = currentMonth >= 12 ? Cursors.Default : Cursors.Hand;
+            btnPrev.ForeColor = Color.FromArgb(107, 114, 128);
+            btnNext.ForeColor = Color.FromArgb(107, 114, 128);
+            btnPrev.Cursor = Cursors.Hand;
+            btnNext.Cursor = Cursors.Hand;
         }
 
         private static void EnableDoubleBuffered(Control control)

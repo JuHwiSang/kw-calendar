@@ -640,6 +640,7 @@ namespace KW_Calendar.Views
 
         private void BuildCategoryList()
         {
+            SendMessage(flpCategories.Handle, WM_SETREDRAW, 0, 0);
             flpCategories.SuspendLayout();
             try
             {
@@ -677,6 +678,8 @@ namespace KW_Calendar.Views
             {
                 flpCategories.ResumeLayout(false);
                 flpCategories.PerformLayout();
+                SendMessage(flpCategories.Handle, WM_SETREDRAW, 1, 0);
+                flpCategories.Invalidate(true);
             }
         }
 

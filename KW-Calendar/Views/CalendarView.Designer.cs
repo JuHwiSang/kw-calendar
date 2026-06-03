@@ -7,7 +7,7 @@ namespace KW_Calendar.Views
     {
         private System.ComponentModel.IContainer components = null;
 
-        private RoundedPanel mainCard;
+        private Panel mainCard;
         private Panel leftArea;
         private Panel sideArea;
         private Panel divider;
@@ -81,7 +81,7 @@ namespace KW_Calendar.Views
         {
             components = new System.ComponentModel.Container();
 
-            mainCard = new RoundedPanel();
+            mainCard = new Panel();
             leftArea = new Panel();
             sideArea = new Panel();
             divider = new Panel();
@@ -152,22 +152,19 @@ namespace KW_Calendar.Views
             // CalendarView
             // 
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(238, 239, 241);
-            ClientSize = new Size(884, 692);
+            BackColor = Color.White;
+            ClientSize = new Size(832, 660);
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.CenterScreen;
             Name = "CalendarView";
             Text = "KW-calendar";
 
-            // 
+            //
             // mainCard
-            // 
-            mainCard.Location = new Point(26, 36);
+            //
+            mainCard.Location = new Point(0, 36);
             mainCard.Size = new Size(832, 624);
-            mainCard.BorderRadius = 28;
-            mainCard.BorderSize = 0;
-            mainCard.FillColor = Color.White;
-            mainCard.BackColor = Color.Transparent;
+            mainCard.BackColor = Color.White;
             mainCard.Name = "mainCard";
 
             // 

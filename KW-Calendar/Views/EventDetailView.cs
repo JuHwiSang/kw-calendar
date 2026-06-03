@@ -39,6 +39,18 @@ public partial class EventDetailView : Form, IEventDetailView
     {
         InitializeComponent();
 
+        var titleBar = new CustomTitleBar
+        {
+            Dock = DockStyle.Top,
+            Height = 36,
+            BackColor = System.Drawing.Color.White,
+            TitleText = "일정 상세",
+            ShowMaximize = false,
+            ShowMinimize = false
+        };
+        Controls.Add(titleBar);
+        titleBar.BringToFront();
+
         btnFavorite.Click += BtnFavorite_Click;
         btnOpenExternalLink.Click += BtnOpenExternalLink_Click;
         FormClosed += EventDetailView_FormClosed;

@@ -148,6 +148,7 @@ namespace KW_Calendar.Views
 
             ApplyCalendarDesign();
             InitializeCellPool();
+            InitializeTitleBar();
 
             rbAll.CheckedChanged += FilterRadio_CheckedChanged;
             rbFav.CheckedChanged += FilterRadio_CheckedChanged;
@@ -191,10 +192,6 @@ namespace KW_Calendar.Views
         private void ApplyCalendarDesign()
         {
             BackColor = Color.FromArgb(238, 239, 241);
-
-            mainCard.FillColor = Color.White;
-            mainCard.BorderSize = 0;
-            mainCard.BorderRadius = 28;
 
             sideArea.BackColor = Color.FromArgb(249, 250, 251);
 
@@ -304,6 +301,19 @@ namespace KW_Calendar.Views
             btnNext.ForeColor = Color.FromArgb(107, 114, 128);
             btnPrev.Cursor = Cursors.Hand;
             btnNext.Cursor = Cursors.Hand;
+        }
+
+        private void InitializeTitleBar()
+        {
+            var titleBar = new CustomTitleBar
+            {
+                Dock = DockStyle.Top,
+                Height = 36,
+                BackColor = Color.White,
+                TitleText = "KW Calendar"
+            };
+            Controls.Add(titleBar);
+            titleBar.BringToFront();
         }
 
         private static void EnableDoubleBuffered(Control control)

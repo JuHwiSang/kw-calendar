@@ -36,7 +36,7 @@ partial class EventDetailView
         lblTitle.AutoSize = false;
         lblTitle.Font = new System.Drawing.Font("맑은 고딕", 16F, System.Drawing.FontStyle.Bold);
         lblTitle.ForeColor = System.Drawing.Color.FromArgb(31, 41, 55);
-        lblTitle.Location = new System.Drawing.Point(28, 24);
+        lblTitle.Location = new System.Drawing.Point(28, 60);
         lblTitle.Name = "lblTitle";
         lblTitle.Size = new System.Drawing.Size(340, 36);
         lblTitle.TabIndex = 0;
@@ -50,7 +50,7 @@ partial class EventDetailView
         btnFavorite.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
         btnFavorite.Font = new System.Drawing.Font("Segoe UI Symbol", 18F, System.Drawing.FontStyle.Regular);
         btnFavorite.ForeColor = System.Drawing.Color.FromArgb(250, 204, 21);
-        btnFavorite.Location = new System.Drawing.Point(374, 21);
+        btnFavorite.Location = new System.Drawing.Point(374, 57);
         btnFavorite.Name = "btnFavorite";
         btnFavorite.Size = new System.Drawing.Size(44, 44);
         btnFavorite.TabIndex = 1;
@@ -63,7 +63,7 @@ partial class EventDetailView
         lblTime.AutoSize = false;
         lblTime.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
         lblTime.ForeColor = System.Drawing.Color.FromArgb(107, 114, 128);
-        lblTime.Location = new System.Drawing.Point(30, 76);
+        lblTime.Location = new System.Drawing.Point(30, 112);
         lblTime.Name = "lblTime";
         lblTime.Size = new System.Drawing.Size(388, 28);
         lblTime.TabIndex = 2;
@@ -78,7 +78,7 @@ partial class EventDetailView
         lblBody.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
         lblBody.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Regular);
         lblBody.ForeColor = System.Drawing.Color.FromArgb(55, 65, 81);
-        lblBody.Location = new System.Drawing.Point(30, 122);
+        lblBody.Location = new System.Drawing.Point(30, 158);
         lblBody.Name = "lblBody";
         lblBody.Padding = new System.Windows.Forms.Padding(12);
         lblBody.Size = new System.Drawing.Size(388, 210);
@@ -94,7 +94,7 @@ partial class EventDetailView
         btnOpenExternalLink.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
         btnOpenExternalLink.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
         btnOpenExternalLink.ForeColor = System.Drawing.Color.White;
-        btnOpenExternalLink.Location = new System.Drawing.Point(30, 352);
+        btnOpenExternalLink.Location = new System.Drawing.Point(30, 388);
         btnOpenExternalLink.Name = "btnOpenExternalLink";
         btnOpenExternalLink.Size = new System.Drawing.Size(388, 42);
         btnOpenExternalLink.TabIndex = 4;
@@ -107,13 +107,13 @@ partial class EventDetailView
         AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         BackColor = System.Drawing.Color.White;
-        ClientSize = new System.Drawing.Size(450, 420);
+        ClientSize = new System.Drawing.Size(450, 456);
         Controls.Add(btnOpenExternalLink);
         Controls.Add(lblBody);
         Controls.Add(lblTime);
         Controls.Add(btnFavorite);
         Controls.Add(lblTitle);
-        FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+        FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
         MaximizeBox = false;
         MinimizeBox = false;
         Name = "EventDetailView";

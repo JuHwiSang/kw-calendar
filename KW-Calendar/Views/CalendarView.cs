@@ -476,7 +476,7 @@ namespace KW_Calendar.Views
 
             private const int MaxEventTags = 8;
             private const int HeaderHeight = 34;   // 날짜 라벨/배지 영역 높이
-            private const int TagHeight = 18;
+            private const int TagHeight = 22;
             private const int TagGap = 3;
             private const int SideMargin = 6;
 
@@ -654,7 +654,9 @@ namespace KW_Calendar.Views
                 {
                     Dock = DockStyle.Fill,
                     TextAlign = ContentAlignment.MiddleLeft,
-                    Padding = new Padding(6, 0, 6, 0),
+                    // 한글 폰트 메트릭상 위쪽 ascent 여유가 커서 시각적으로 위로 치우쳐 보임.
+                    // 상단 padding으로 텍스트를 아래로 보정.
+                    Padding = new Padding(6, 3, 6, 0),
                     BackColor = Color.Transparent,
                     Font = FontEventTag,
                     Cursor = Cursors.Hand,

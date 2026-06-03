@@ -10,6 +10,9 @@ public class EventDetailPresenter
     private readonly IEventDetailView _view;
     private readonly IEventService _eventService;
 
+    /// <summary>토글이 DB까지 반영 완료된 후 발화. payload: 토글 후 Event 상태.</summary>
+    public event EventHandler<Event>? FavoriteToggled;
+
     public EventDetailPresenter(IEventDetailView view, IEventService eventService)
     {
         _view = view;
@@ -69,6 +72,7 @@ public class EventDetailPresenter
         var updated = await _eventService.ToggleFavoriteAsync(eventId);
         _view.IsFavorited = updated.IsFavorited;
         _view.CurrentEvent = updated;
+        FavoriteToggled?.Invoke(this, updated);
     }
     
 }

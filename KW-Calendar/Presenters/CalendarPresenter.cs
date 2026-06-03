@@ -153,7 +153,10 @@ public class CalendarPresenter
 
         detailPresenter.Initialize(eventId);
 
-        // 닫힐 때 캘린더 새로고침. 모달리스라 Show()는 즉시 리턴.
+        // detail에서 즐겨찾기 토글 시 캘린더도 즉시 반영.
+        detailPresenter.FavoriteToggled += async (s, ev) => await LoadAllAsync();
+
+        // 닫힐 때도 한 번 더 새로고침 (안전망).
         detailView.FormClosed += async (s, e) => await LoadAllAsync();
 
         // owner를 지정하면 detail이 항상 owner 위에 떠 owner 클릭 시 앞으로 못 옴.

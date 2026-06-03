@@ -296,72 +296,81 @@ namespace KW_Calendar.Views
 
         private void BuildCalendar(int year, int month)
         {
-            tlpCalendar.Controls.Clear();
-            tlpCalendar.ColumnStyles.Clear();
-            tlpCalendar.RowStyles.Clear();
-
-            tlpCalendar.ColumnCount = 7;
-
-            DateTime firstDay = new DateTime(year, month, 1);
-            int startCol = (int)firstDay.DayOfWeek;
-            int daysInMonth = DateTime.DaysInMonth(year, month);
-
-            int rowCount = (int)Math.Ceiling((startCol + daysInMonth) / 7.0);
-            if (rowCount < 5)
-                rowCount = 5;
-
-            tlpCalendar.RowCount = rowCount;
-
-            for (int i = 0; i < 7; i++)
+            tlpCalendar.SuspendLayout();
+            try
             {
-                tlpCalendar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / 7F));
-            }
+                tlpCalendar.Controls.Clear();
+                tlpCalendar.ColumnStyles.Clear();
+                tlpCalendar.RowStyles.Clear();
 
-            for (int i = 0; i < rowCount; i++)
-            {
-                tlpCalendar.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / rowCount));
-            }
+                tlpCalendar.ColumnCount = 7;
 
-            int day = 1;
+                DateTime firstDay = new DateTime(year, month, 1);
+                int startCol = (int)firstDay.DayOfWeek;
+                int daysInMonth = DateTime.DaysInMonth(year, month);
 
-            for (int row = 0; row < rowCount; row++)
-            {
-                for (int col = 0; col < 7; col++)
+                int rowCount = (int)Math.Ceiling((startCol + daysInMonth) / 7.0);
+                if (rowCount < 5)
+                    rowCount = 5;
+
+                tlpCalendar.RowCount = rowCount;
+
+                for (int i = 0; i < 7; i++)
                 {
-                    RoundedPanel cell;
+                    tlpCalendar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / 7F));
+                }
 
-                    if (row == 0 && col < startCol)
+                for (int i = 0; i < rowCount; i++)
+                {
+                    tlpCalendar.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / rowCount));
+                }
+
+                int day = 1;
+
+                for (int row = 0; row < rowCount; row++)
+                {
+                    for (int col = 0; col < 7; col++)
                     {
-                        cell = CreateEmptyDayCell();
-                    }
-                    else if (day <= daysInMonth)
-                    {
-                        DateTime today = DateTime.Today;
+                        RoundedPanel cell;
 
-                        bool isToday =
-                            today.Year == FixedYear &&
-                            today.Month == month &&
-                            today.Day == day;
-
-                        /*현 코드 내에 sample데이터만 사용하게 됨 -> Present에서 주는 데이터 사용하게*/
-                        DateOnly date = new DateOnly(year, month, day);
-
-                        if (!eventsByDay.TryGetValue(date, out var dayEvents))
+                        if (row == 0 && col < startCol)
                         {
-                            dayEvents = new List<Event>();
+                            cell = CreateEmptyDayCell();
+                        }
+                        else if (day <= daysInMonth)
+                        {
+                            DateTime today = DateTime.Today;
+
+                            bool isToday =
+                                today.Year == FixedYear &&
+                                today.Month == month &&
+                                today.Day == day;
+
+                            /*현 코드 내에 sample데이터만 사용하게 됨 -> Present에서 주는 데이터 사용하게*/
+                            DateOnly date = new DateOnly(year, month, day);
+
+                            if (!eventsByDay.TryGetValue(date, out var dayEvents))
+                            {
+                                dayEvents = new List<Event>();
+                            }
+
+                            cell = CreateDayCell(day, dayEvents, isToday);
+                            day++;
+                            //
+                        }
+                        else
+                        {
+                            cell = CreateEmptyDayCell();
                         }
 
-                        cell = CreateDayCell(day, dayEvents, isToday);
-                        day++;
-                        //
+                        tlpCalendar.Controls.Add(cell, col, row);
                     }
-                    else
-                    {
-                        cell = CreateEmptyDayCell();
-                    }
-
-                    tlpCalendar.Controls.Add(cell, col, row);
                 }
+            }
+            finally
+            {
+                tlpCalendar.ResumeLayout(false);
+                tlpCalendar.PerformLayout();
             }
         }
 
@@ -503,34 +512,43 @@ namespace KW_Calendar.Views
 
         private void BuildCategoryList()
         {
-            flpCategories.Controls.Clear();
-
-            int visibleCount = 0;
-
-            //수정
-            foreach (Category category in modelCategories)
+            flpCategories.SuspendLayout();
+            try
             {
-                if (rbFav.Checked && !category.IsFavorited)
-                    continue;
+                flpCategories.Controls.Clear();
 
-                AddCategoryItem(category);
-                visibleCount++;
-            }
-            //
+                int visibleCount = 0;
 
-            if (visibleCount == 0)
-            {
-                Label emptyLabel = new Label
+                //수정
+                foreach (Category category in modelCategories)
                 {
-                    Text = "즐겨찾기 일정이 없습니다.",
-                    Width = 198,
-                    Height = 40,
-                    ForeColor = Color.FromArgb(156, 163, 175),
-                    Font = new Font("맑은 고딕", 9F, FontStyle.Bold),
-                    TextAlign = ContentAlignment.MiddleCenter
-                };
+                    if (rbFav.Checked && !category.IsFavorited)
+                        continue;
 
-                flpCategories.Controls.Add(emptyLabel);
+                    AddCategoryItem(category);
+                    visibleCount++;
+                }
+                //
+
+                if (visibleCount == 0)
+                {
+                    Label emptyLabel = new Label
+                    {
+                        Text = "즐겨찾기 일정이 없습니다.",
+                        Width = 198,
+                        Height = 40,
+                        ForeColor = Color.FromArgb(156, 163, 175),
+                        Font = new Font("맑은 고딕", 9F, FontStyle.Bold),
+                        TextAlign = ContentAlignment.MiddleCenter
+                    };
+
+                    flpCategories.Controls.Add(emptyLabel);
+                }
+            }
+            finally
+            {
+                flpCategories.ResumeLayout(false);
+                flpCategories.PerformLayout();
             }
         }
 

@@ -282,7 +282,7 @@ namespace KW_Calendar.Views
             // rbFav
             // 
             rbFav.AutoSize = true;
-            rbFav.Location = new Point(20, 34);
+            rbFav.Location = new Point(20, 50);
             rbFav.Name = "rbFav";
             rbFav.Size = new Size(130, 24);
             rbFav.TabIndex = 0;
@@ -295,7 +295,7 @@ namespace KW_Calendar.Views
             // 
             rbAll.AutoSize = true;
             rbAll.Checked = true;
-            rbAll.Location = new Point(20, 56);
+            rbAll.Location = new Point(20, 72);
             rbAll.Name = "rbAll";
             rbAll.Size = new Size(100, 24);
             rbAll.TabIndex = 1;
@@ -306,7 +306,7 @@ namespace KW_Calendar.Views
             // 
             // lblCategoryTitle
             // 
-            lblCategoryTitle.Location = new Point(22, 100);
+            lblCategoryTitle.Location = new Point(22, 116);
             lblCategoryTitle.Size = new Size(190, 26);
             lblCategoryTitle.Name = "lblCategoryTitle";
             lblCategoryTitle.Text = "일정 카테고리";
@@ -316,7 +316,7 @@ namespace KW_Calendar.Views
             // 
             // flpCategories
             // 
-            flpCategories.Location = new Point(20, 138);
+            flpCategories.Location = new Point(20, 154);
             flpCategories.Size = new Size(204, 430);
             flpCategories.Name = "flpCategories";
             flpCategories.BackColor = Color.FromArgb(249, 250, 251);

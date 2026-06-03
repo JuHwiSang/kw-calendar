@@ -448,21 +448,7 @@ namespace KW_Calendar.Views
                         dayEvents = Array.Empty<Event>();
                     }
 
-                    Event? firstEvent = dayEvents.Count > 0 ? dayEvents[0] : null;
-                    Category? linkedCategory = firstEvent != null
-                        ? modelCategories.FirstOrDefault(c => c.Id == firstEvent.CategoryId)
-                        : null;
-
-                    bool isFavoriteEvent = firstEvent != null && (
-                        firstEvent.IsFavorited ||
-                        (linkedCategory != null && linkedCategory.IsFavorited));
-
-                    dayCell.SetDay(
-                        day,
-                        isToday,
-                        firstEvent,
-                        linkedCategory,
-                        isFavoriteEvent);
+                    dayCell.SetDay(day, isToday, dayEvents);
 
                     day++;
                 }
@@ -482,15 +468,19 @@ namespace KW_Calendar.Views
             private static readonly Color DayLabelFore = Color.FromArgb(31, 41, 55);
             private static readonly Color TodayBadgeFill = Color.FromArgb(190, 24, 73);
 
+            private const int MaxEventTags = 8;
+            private const int HeaderHeight = 34;   // 날짜 라벨/배지 영역 높이
+            private const int TagHeight = 18;
+            private const int TagGap = 3;
+            private const int SideMargin = 6;
+
             private readonly CalendarView _owner;
             public RoundedPanel Panel { get; }
             private readonly Label _dayLabel;
             private readonly RoundedPanel _badge;
             private readonly Label _badgeText;
-            private readonly RoundedPanel _eventTag;
-            private readonly Label _eventLabel;
 
-            private int _currentEventId = -1;
+            private readonly EventTag[] _tagPool = new EventTag[MaxEventTags];
 
             public DayCell(CalendarView owner)
             {
@@ -509,7 +499,7 @@ namespace KW_Calendar.Views
                 _dayLabel = new Label
                 {
                     Dock = DockStyle.Top,
-                    Height = 34,
+                    Height = HeaderHeight,
                     TextAlign = ContentAlignment.MiddleCenter,
                     ForeColor = DayLabelFore,
                     BackColor = Color.Transparent,
@@ -536,52 +526,49 @@ namespace KW_Calendar.Views
                 };
                 _badge.Controls.Add(_badgeText);
 
-                _eventTag = new RoundedPanel
-                {
-                    Size = new Size(64, 20),
-                    BorderRadius = 5,
-                    BorderSize = 0,
-                    Cursor = Cursors.Hand,
-                    Visible = false
-                };
-
-                _eventLabel = new Label
-                {
-                    Dock = DockStyle.Fill,
-                    TextAlign = ContentAlignment.MiddleCenter,
-                    BackColor = Color.Transparent,
-                    Font = FontEventTag,
-                    Cursor = Cursors.Hand
-                };
-                _eventTag.Controls.Add(_eventLabel);
-
-                _eventTag.Click += OnEventClick;
-                _eventLabel.Click += OnEventClick;
-
                 Panel.Controls.Add(_dayLabel);
                 Panel.Controls.Add(_badge);
-                Panel.Controls.Add(_eventTag);
+
+                for (int i = 0; i < MaxEventTags; i++)
+                {
+                    var tag = new EventTag(owner);
+                    _tagPool[i] = tag;
+                    Panel.Controls.Add(tag.Panel);
+                }
 
                 Panel.Resize += (s, e) => LayoutChildren();
             }
 
-            private void OnEventClick(object? sender, EventArgs e)
-            {
-                if (_currentEventId >= 0)
-                    _owner.EventSelected?.Invoke(_owner, _currentEventId);
-            }
-
             private void LayoutChildren()
             {
+                int w = Panel.Width;
+                int h = Panel.Height;
+                if (w <= 0 || h <= 0) return;
+
                 if (_badge.Visible)
                 {
-                    _badge.Left = (Panel.Width - _badge.Width) / 2;
-                    _badge.Top = 8;
+                    _badge.Left = (w - _badge.Width) / 2;
+                    _badge.Top = 4;
                 }
-                if (_eventTag.Visible)
+
+                int tagWidth = Math.Max(0, w - SideMargin * 2);
+                int top = HeaderHeight;
+                int available = h - HeaderHeight - 4; // 아래 4px 여백
+                int maxVisible = Math.Max(0, (available + TagGap) / (TagHeight + TagGap));
+
+                for (int i = 0; i < MaxEventTags; i++)
                 {
-                    _eventTag.Left = (Panel.Width - _eventTag.Width) / 2;
-                    _eventTag.Top = 42;
+                    var tag = _tagPool[i];
+                    if (i < maxVisible && tag.IsAssigned)
+                    {
+                        tag.Panel.SetBounds(SideMargin, top, tagWidth, TagHeight);
+                        tag.Panel.Visible = true;
+                        top += TagHeight + TagGap;
+                    }
+                    else
+                    {
+                        tag.Panel.Visible = false;
+                    }
                 }
             }
 
@@ -589,16 +576,14 @@ namespace KW_Calendar.Views
             {
                 _dayLabel.Visible = false;
                 _badge.Visible = false;
-                _eventTag.Visible = false;
-                _currentEventId = -1;
+                for (int i = 0; i < MaxEventTags; i++)
+                {
+                    _tagPool[i].Clear();
+                    _tagPool[i].Panel.Visible = false;
+                }
             }
 
-            public void SetDay(
-                int day,
-                bool isToday,
-                Event? firstEvent,
-                Category? linkedCategory,
-                bool isFavoriteEvent)
+            public void SetDay(int day, bool isToday, IReadOnlyList<Event> dayEvents)
             {
                 string dayText = day.ToString();
 
@@ -615,36 +600,83 @@ namespace KW_Calendar.Views
                     _dayLabel.Visible = true;
                 }
 
-                if (firstEvent != null)
+                int n = Math.Min(dayEvents.Count, MaxEventTags);
+                for (int i = 0; i < MaxEventTags; i++)
                 {
-                    string title = isFavoriteEvent
-                        ? "★ " + _owner.ShortenTitle(firstEvent.Title)
-                        : _owner.ShortenTitle(firstEvent.Title);
-
-                    if (_eventLabel.Text != title) _eventLabel.Text = title;
-                    _eventLabel.ForeColor = _owner.GetCategoryForeColor(linkedCategory);
-                    _eventTag.FillColor = _owner.GetCategoryBackColor(linkedCategory);
-                    _currentEventId = firstEvent.Id;
-                    _eventTag.Visible = true;
-                }
-                else
-                {
-                    _eventTag.Visible = false;
-                    _currentEventId = -1;
+                    if (i < n)
+                    {
+                        var ev = dayEvents[i];
+                        var category = _owner.modelCategories.FirstOrDefault(c => c.Id == ev.CategoryId);
+                        bool isFav = ev.IsFavorited || (category != null && category.IsFavorited);
+                        _tagPool[i].Assign(ev, category, isFav);
+                    }
+                    else
+                    {
+                        _tagPool[i].Clear();
+                    }
                 }
 
                 LayoutChildren();
             }
         }
-        //보조 메서드 추가
-        private string ShortenTitle(string title)
+
+        private sealed class EventTag
         {
-            if (string.IsNullOrWhiteSpace(title))
-                return "";
+            private readonly CalendarView _owner;
+            public RoundedPanel Panel { get; }
+            private readonly Label _label;
+            private int _eventId = -1;
 
-            return title.Length > 3 ? title.Substring(0, 3) + "..." : title;
+            public bool IsAssigned => _eventId >= 0;
+
+            public EventTag(CalendarView owner)
+            {
+                _owner = owner;
+
+                Panel = new RoundedPanel
+                {
+                    BorderRadius = 5,
+                    BorderSize = 0,
+                    Cursor = Cursors.Hand,
+                    Visible = false
+                };
+
+                _label = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    Padding = new Padding(6, 0, 6, 0),
+                    BackColor = Color.Transparent,
+                    Font = FontEventTag,
+                    Cursor = Cursors.Hand,
+                    AutoEllipsis = true
+                };
+                Panel.Controls.Add(_label);
+
+                Panel.Click += OnClick;
+                _label.Click += OnClick;
+            }
+
+            private void OnClick(object? sender, EventArgs e)
+            {
+                if (_eventId >= 0)
+                    _owner.EventSelected?.Invoke(_owner, _eventId);
+            }
+
+            public void Assign(Event ev, Category? category, bool isFavorite)
+            {
+                string title = isFavorite ? "★ " + ev.Title : ev.Title;
+                if (_label.Text != title) _label.Text = title;
+                _label.ForeColor = _owner.GetCategoryForeColor(category);
+                Panel.FillColor = _owner.GetCategoryBackColor(category);
+                _eventId = ev.Id;
+            }
+
+            public void Clear()
+            {
+                _eventId = -1;
+            }
         }
-
         //삭제
        /* private void OpenEventDetail(CalendarEventInfo eventInfo)
         {

@@ -127,6 +127,11 @@ namespace KW_Calendar.Views
                 {
                     BuildCategoryList();
                 }
+                // 카테고리 IsFavorited는 이벤트 별표 판정에도 쓰이므로 캘린더도 다시 그린다.
+                if (tlpCalendar != null)
+                {
+                    BuildCalendar(currentYear, currentMonth);
+                }
             }
         }
 

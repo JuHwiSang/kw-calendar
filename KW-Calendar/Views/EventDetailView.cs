@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using KW_Calendar.Models;
+using KW_Calendar.Native;
 
 namespace KW_Calendar.Views;
 
@@ -54,6 +55,12 @@ public partial class EventDetailView : Form, IEventDetailView
         btnFavorite.Click += BtnFavorite_Click;
         btnOpenExternalLink.Click += BtnOpenExternalLink_Click;
         FormClosed += EventDetailView_FormClosed;
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        WindowHelpers.ApplyRoundedCorners(Handle);
     }
 
     private void BtnFavorite_Click(object? sender, EventArgs e)

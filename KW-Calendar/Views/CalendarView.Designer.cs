@@ -153,7 +153,7 @@ namespace KW_Calendar.Views
             // 
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
-            ClientSize = new Size(832, 660);
+            ClientSize = new Size(832, 668);
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.CenterScreen;
             Name = "CalendarView";
@@ -162,7 +162,7 @@ namespace KW_Calendar.Views
             //
             // mainCard
             //
-            mainCard.Location = new Point(0, 36);
+            mainCard.Location = new Point(0, 44);
             mainCard.Size = new Size(832, 624);
             mainCard.BackColor = Color.White;
             mainCard.Name = "mainCard";

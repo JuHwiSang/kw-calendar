@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using KW_Calendar.Models;
+using KW_Calendar.Native;
 using System.ComponentModel;//추가
 
 namespace KW_Calendar.Views
@@ -303,12 +304,18 @@ namespace KW_Calendar.Views
             btnNext.Cursor = Cursors.Hand;
         }
 
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            WindowHelpers.ApplyRoundedCorners(Handle);
+        }
+
         private void InitializeTitleBar()
         {
             var titleBar = new CustomTitleBar
             {
                 Dock = DockStyle.Top,
-                Height = 36,
+                Height = 44,
                 BackColor = Color.White,
                 TitleText = "KW Calendar"
             };

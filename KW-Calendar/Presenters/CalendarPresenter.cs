@@ -37,7 +37,7 @@ public class CalendarPresenter
         _view.CategoryFavoriteToggleRequested += OnCategoryFavoriteToggleRequested;
 
         _view.DisplayedMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-        _ = LoadAllAsync();
+        _ = SyncAndRefreshAsync();
     }
 
     // --- 캘린더 내비게이션 ---

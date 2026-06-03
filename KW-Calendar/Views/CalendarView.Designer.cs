@@ -316,8 +316,8 @@ namespace KW_Calendar.Views
             // 
             // flpCategories
             // 
-            flpCategories.Location = new Point(20, 154);
-            flpCategories.Size = new Size(204, 430);
+            flpCategories.Location = new Point(10, 154);
+            flpCategories.Size = new Size(224, 430);
             flpCategories.Name = "flpCategories";
             flpCategories.BackColor = Color.FromArgb(249, 250, 251);
             flpCategories.FlowDirection = FlowDirection.TopDown;

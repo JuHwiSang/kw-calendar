@@ -22,6 +22,9 @@ namespace KW_Calendar.Views
         private static readonly Font FontEventTag = new("맑은 고딕", 7.5F, FontStyle.Bold);
         private static readonly Font FontArrow = new("Arial", 28F, FontStyle.Regular);
         private static readonly Font FontStar = new("Segoe UI Symbol", 13F, FontStyle.Regular);
+        private static readonly Font FontCategoryItem = new("맑은 고딕", 9F, FontStyle.Bold);
+
+        private readonly ToolTip categoryTooltip = new ToolTip { ShowAlways = true };
 
         private int currentYear = FixedYear;
         private int currentMonth = DateTime.Today.Year == FixedYear ? DateTime.Today.Month : 1;
@@ -746,7 +749,7 @@ namespace KW_Calendar.Views
         {
             RoundedPanel item = new RoundedPanel
             {
-                Width = 198,
+                Width = 224,
                 Height = 40,
                 Margin = new Padding(0, 0, 0, 10),
                 BorderRadius = 8,
@@ -770,11 +773,13 @@ namespace KW_Calendar.Views
                 Text = category.Name,
                 ForeColor = Color.FromArgb(31, 41, 55),
                 BackColor = Color.Transparent,
-                Font = FontRadio,
+                Font = FontCategoryItem,
                 Location = new Point(42, 9),
-                Size = new Size(122, 22),
-                TextAlign = ContentAlignment.MiddleLeft
+                Size = new Size(150, 22),
+                TextAlign = ContentAlignment.MiddleLeft,
+                AutoEllipsis = true
             };
+            categoryTooltip.SetToolTip(text, category.Name);
 
             Label starButton = CreateStarButton(category);
 
@@ -793,7 +798,7 @@ namespace KW_Calendar.Views
 
             Label starButton = new Label
             {
-                Location = new Point(170, 5),
+                Location = new Point(196, 5),
                 Size = new Size(22, 28),
                 TextAlign = ContentAlignment.MiddleCenter,
                 BackColor = Color.Transparent,

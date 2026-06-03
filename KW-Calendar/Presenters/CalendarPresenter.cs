@@ -146,23 +146,21 @@ public class CalendarPresenter
 
         await LoadAllAsync();
     }*/
-    private async Task OpenEventDetailAsync(int eventId)
+    private Task OpenEventDetailAsync(int eventId)
     {
         var detailView = new EventDetailView();
         var detailPresenter = new EventDetailPresenter(detailView, _eventService);
 
         detailPresenter.Initialize(eventId);
 
-        if (_view is System.Windows.Forms.Form owner)
-        {
-            detailView.ShowDialog(owner);
-        }
-        else
-        {
-            detailView.ShowDialog();
-        }
+        // 닫힐 때 캘린더 새로고침. 모달리스라 Show()는 즉시 리턴.
+        detailView.FormClosed += async (s, e) => await LoadAllAsync();
 
-        await LoadAllAsync();
+        // owner를 지정하면 detail이 항상 owner 위에 떠 owner 클릭 시 앞으로 못 옴.
+        // 모달리스 + 독립 z-order를 원하므로 owner 없이 Show.
+        detailView.Show();
+
+        return Task.CompletedTask;
     }
 
 

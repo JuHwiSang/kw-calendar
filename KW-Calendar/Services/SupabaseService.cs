@@ -55,7 +55,7 @@ public class SupabaseService : ISupabaseService
         [Column("title")] public string Title { get; set; } = "";
         [Column("body")] public string? Body { get; set; }
         [Column("start_dt")] public DateTime StartDt { get; set; }
-        [Column("end_dt")] public DateTime EndDt { get; set; }
+        [Column("end_dt")] public DateTime? EndDt { get; set; }
         [Column("is_all_day")] public bool IsAllDay { get; set; }
         [Column("notice_dt")] public DateTime? NoticeDt { get; set; }
         [Column("external_link")] public string? ExternalLink { get; set; }

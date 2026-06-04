@@ -16,7 +16,7 @@ public class LocalDbService : ILocalDbService, IDisposable
     public async Task<IReadOnlyList<Event>> GetEventsByDateRangeAsync(DateTime start, DateTime end, CancellationToken ct = default)
     {
         return await _db.Events
-            .Where(e => e.StartDt <= end && e.EndDt >= start)
+            .Where(e => e.StartDt <= end && (e.EndDt ?? e.StartDt) >= start)
             .OrderBy(e => e.StartDt)
             .Select(r => r.ToEvent())
             .ToListAsync(ct);
@@ -153,7 +153,7 @@ internal class EventRow
     public string Title { get; set; } = string.Empty;
     public string? Body { get; set; }
     public DateTime StartDt { get; set; }
-    public DateTime EndDt { get; set; }
+    public DateTime? EndDt { get; set; }
     public bool IsAllDay { get; set; }
     public DateTime? NoticeDt { get; set; }
     public string? ExternalLink { get; set; }

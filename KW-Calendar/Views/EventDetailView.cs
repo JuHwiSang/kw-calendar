@@ -109,13 +109,18 @@ public partial class EventDetailView : Form, IEventDetailView
 
     private static string FormatTimeRange(Event ev)
     {
-        if (ev.StartDt == default && ev.EndDt == default)
+        if (ev.StartDt == default && ev.EndDt == null)
             return "-";
 
-        if (ev.StartDt.Date == ev.EndDt.Date)
-            return $"{ev.StartDt:yyyy.MM.dd HH:mm} - {ev.EndDt:HH:mm}";
+        if (ev.EndDt == null)
+            return $"{ev.StartDt:yyyy.MM.dd HH:mm}";
 
-        return $"{ev.StartDt:yyyy.MM.dd HH:mm} - {ev.EndDt:yyyy.MM.dd HH:mm}";
+        DateTime endDt = ev.EndDt.Value;
+
+        if (ev.StartDt.Date == endDt.Date)
+            return $"{ev.StartDt:yyyy.MM.dd HH:mm} - {endDt:HH:mm}";
+
+        return $"{ev.StartDt:yyyy.MM.dd HH:mm} - {endDt:yyyy.MM.dd HH:mm}";
     }
 
     private bool _reflowing;

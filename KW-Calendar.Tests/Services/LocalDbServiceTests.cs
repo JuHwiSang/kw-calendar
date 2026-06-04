@@ -73,6 +73,20 @@ public class LocalDbServiceTests : IDisposable
         Assert.Single(result);
         Assert.Equal("In", result[0].Title);
     }
+    [Fact]
+    public async Task GetEventsByDateRange_ReturnsEventWithNullEndDt()
+    {
+        await _sut.UpsertEventsAsync([
+            MakeEvent(1, "OneDay", new DateTime(2026, 5, 10), null),
+    ]);
+
+        var result = await _sut.GetEventsByDateRangeAsync(
+            new DateTime(2026, 5, 1), new DateTime(2026, 5, 31));
+
+        Assert.Single(result);
+        Assert.Equal("OneDay", result[0].Title);
+        Assert.Null(result[0].EndDt);
+    }
 
     [Fact]
     public async Task GetFavoritedEvents_IncludesEventFavorited()
@@ -134,7 +148,7 @@ public class LocalDbServiceTests : IDisposable
             Id = id,
             Title = title,
             StartDt = start ?? new DateTime(2026, 5, 10),
-            EndDt = end ?? new DateTime(2026, 5, 11),
+            EndDt = end,
             CategoryId = categoryId,
         };
 }

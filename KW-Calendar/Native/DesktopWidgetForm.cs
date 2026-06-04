@@ -11,12 +11,10 @@ namespace KW_Calendar.Native
     ///    있을 때 hwndInsertAfter를 HWND_BOTTOM으로 강제. (Rainmeter, VueMinder 방식)
     /// 2) WS_EX_TOOLWINDOW로 작업표시줄/Alt+Tab에서 제외, WS_EX_NOACTIVATE로
     ///    클릭해도 포커스를 가져가지 않게 한다.
-    ///
-    /// === Win+D / "바탕화면 보기" 대응 ===
-    /// Win11 24H2부터 Shell이 Show Desktop 시 일반 창을 cloak/숨김 처리하는
-    /// 메커니즘이 강화되어 WS_MINIMIZEBOX 비트 트릭만으론 부족하고, cloak 상태
-    /// 변경 이벤트(WM_CLOAKED_STATE_CHANGED)도 우리 위젯에 신뢰성 있게 안 온다.
-    /// → 500ms Timer로 cloak 상태를 polling하다가 cloak되면 강제 uncloak.
+    /// 3) FormBorderStyle.None인 폼은 WinForms가 WS_MINIMIZEBOX 비트를 안 켜는데,
+    ///    그 결과 Win+D ("Show Desktop")가 이 창을 minimize 대상에서 건너뛴다.
+    ///    Win11 24H2 기준 Win+D 직후 잠시 안 보이긴 하지만, 다른 창이 활성화되면
+    ///    바로 다시 보임.
     /// </summary>
     public class DesktopWidgetForm : Form
     {

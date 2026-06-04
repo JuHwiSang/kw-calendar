@@ -27,15 +27,20 @@ namespace KW_Calendar
             var events = new EventService(localDb);
             var cats = new CategoryService(localDb);
 
-            // TODO: CalendarView가 ICalendarView를 구현하면 아래 주석 해제
             var view = new CalendarView();
             var presenter = new CalendarPresenter(view, events, cats, sync);
             presenter.Initialize();
 
-            var widget = new CalendarWidgetView();
-            var widgetPresenter = new CalendarPresenter(widget, events, cats, sync);
-            widgetPresenter.Initialize();
-            widget.Show();
+            // 메인 창이 떠서 활성화된 뒤에 위젯을 만들어 띄운다. 위젯이 핸들 생성 시점에
+            // HWND_BOTTOM으로 가라앉으면서 같은 thread의 메인 창까지 같이 끌어내리는
+            // 시작 시 z-order 부작용을 피하기 위함.
+            view.Shown += (_, _) =>
+            {
+                var widget = new CalendarWidgetView();
+                var widgetPresenter = new CalendarPresenter(widget, events, cats, sync);
+                widgetPresenter.Initialize();
+                widget.Show();
+            };
 
             Application.Run(view);
         }

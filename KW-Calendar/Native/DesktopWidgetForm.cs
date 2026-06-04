@@ -7,21 +7,16 @@ namespace KW_Calendar.Native
     /// 바탕화면 위에 떠 있는 위젯의 공용 동작을 담는 베이스 Form.
     ///
     /// === "바탕화면 위, 다른 모든 창 아래" 트릭 ===
-    /// 1) SetParent로 Progman/WorkerW에 직접 부착하는 방식은 Win11 raised desktop
-    ///    환경에서 layered SHELLDLL_DefView가 마우스 hit-test를 가로채 클릭이
-    ///    먹지 않게 된다(아이콘 위로 마우스가 가는 것처럼 처리됨).
-    /// 2) 그래서 우리는 일반 top-level 윈도우로 두되, WM_WINDOWPOSCHANGING에서
-    ///    Z순서를 매번 HWND_BOTTOM으로 강제하여 시각상 "바탕화면 위, 다른 창 아래"를
-    ///    유지한다. (Rainmeter, VueMinder 등이 사용하는 방식)
-    /// 3) WS_EX_TOOLWINDOW로 작업표시줄/Alt+Tab에서 제외, WS_EX_NOACTIVATE로
+    /// 1) 일반 top-level 윈도우로 두고, WM_WINDOWPOSCHANGING에서 z-order 변경 의도가
+    ///    있을 때 hwndInsertAfter를 HWND_BOTTOM으로 강제. (Rainmeter, VueMinder 방식)
+    /// 2) WS_EX_TOOLWINDOW로 작업표시줄/Alt+Tab에서 제외, WS_EX_NOACTIVATE로
     ///    클릭해도 포커스를 가져가지 않게 한다.
-    /// 4) Win+D ("바탕화면 보기") 대응:
-    ///    Show Desktop은 WS_MINIMIZEBOX 스타일이 있는 창만 최소화한다.
-    ///    → CreateParams에서 WS_MINIMIZEBOX 비트를 끄면 Win+D가 위젯을 건너뛴다.
-    ///    참고: https://devblogs.microsoft.com/oldnewthing/20241021-00/?p=110393
     ///
-    /// TODO: 프로그램 처음 뜰 때 위젯이 일반 창처럼 위에 뜬다.
-    ///       사소한 이슈라 보류. 이후 Z순서 강제 로직 복원할 때 같이 해결.
+    /// === Win+D / "바탕화면 보기" 대응 ===
+    /// Win11 24H2부터 Shell이 Show Desktop 시 일반 창을 cloak/숨김 처리하는
+    /// 메커니즘이 강화되어 WS_MINIMIZEBOX 비트 트릭만으론 부족하고, cloak 상태
+    /// 변경 이벤트(WM_CLOAKED_STATE_CHANGED)도 우리 위젯에 신뢰성 있게 안 온다.
+    /// → 500ms Timer로 cloak 상태를 polling하다가 cloak되면 강제 uncloak.
     /// </summary>
     public class DesktopWidgetForm : Form
     {
@@ -41,7 +36,7 @@ namespace KW_Calendar.Native
         [DllImport("user32.dll")]
         private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 
-        // --- 바탕화면 앵커링 윈도우 스타일 (클래스 docstring 3, 4번 참조) ---
+        // --- 바탕화면 앵커링 윈도우 스타일 ---
         protected override CreateParams CreateParams
         {
             get
@@ -62,16 +57,6 @@ namespace KW_Calendar.Native
             base.OnHandleCreated(e);
             DesktopAnchor.Anchor(Handle);
             ApplyRoundedRegion();
-        }
-
-        protected override void OnVisibleChanged(EventArgs e)
-        {
-            base.OnVisibleChanged(e);
-        }
-
-        protected override void OnShown(EventArgs e)
-        {
-            base.OnShown(e);
         }
 
         protected override void OnSizeChanged(EventArgs e)
@@ -95,26 +80,17 @@ namespace KW_Calendar.Native
 
         protected override void WndProc(ref Message m)
         {
-            switch (m.Msg)
+            if (m.Msg == DesktopAnchor.WM_WINDOWPOSCHANGING)
             {
-                case DesktopAnchor.WM_WINDOWPOSCHANGING:
-                case 0x0047: // WM_WINDOWPOSCHANGED
+                // OS가 z-order를 바꾸려는 메시지(NOZORDER 안 켜진 것)에 한해
+                // hwndInsertAfter를 HWND_BOTTOM으로 리디렉트. "항상 맨 아래" 유지.
+                const uint SWP_NOZORDER = 0x0004;
+                var pos = Marshal.PtrToStructure<DesktopAnchor.WINDOWPOS>(m.LParam);
+                if ((pos.flags & SWP_NOZORDER) == 0)
                 {
-                    var pos = Marshal.PtrToStructure<DesktopAnchor.WINDOWPOS>(m.LParam);
-                    break;
+                    pos.hwndInsertAfter = DesktopAnchor.HWND_BOTTOM;
+                    Marshal.StructureToPtr(pos, m.LParam, fDeleteOld: false);
                 }
-                case 0x0018: // WM_SHOWWINDOW
-                    break;
-                case 0x001C: // WM_ACTIVATEAPP
-                    break;
-                case 0x0006: // WM_ACTIVATE
-                    break;
-                case 0x0086: // WM_NCACTIVATE
-                    break;
-                case 0x0005: // WM_SIZE
-                    break;
-                case 0x0112: // WM_SYSCOMMAND
-                    break;
             }
 
             base.WndProc(ref m);

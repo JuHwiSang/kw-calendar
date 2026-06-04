@@ -328,23 +328,7 @@ namespace KW_Calendar.Views
         {
             base.OnHandleCreated(e);
             WindowHelpers.ApplyRoundedCorners(Handle);
-
-            // [DEBUG] WS_MINIMIZEBOX 비트 확인 — Win+D 면제 메커니즘 검증용.
-            const int GWL_STYLE = -16;
-            const int GWL_EXSTYLE = -20;
-            const int WS_MINIMIZEBOX = 0x00020000;
-            long style = GetWindowLongPtr(Handle, GWL_STYLE).ToInt64();
-            long exStyle = GetWindowLongPtr(Handle, GWL_EXSTYLE).ToInt64();
-            System.Diagnostics.Debug.WriteLine(
-                $"[CalendarView] Style=0x{style:X8} ExStyle=0x{exStyle:X8} " +
-                $"MinimizeBox(prop)={MinimizeBox} WS_MINIMIZEBOX={(style & WS_MINIMIZEBOX) != 0}");
-            Console.WriteLine(
-                $"[CalendarView] Style=0x{style:X8} ExStyle=0x{exStyle:X8} " +
-                $"MinimizeBox(prop)={MinimizeBox} WS_MINIMIZEBOX={(style & WS_MINIMIZEBOX) != 0}");
         }
-
-        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr", SetLastError = true)]
-        private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
         protected override void WndProc(ref Message m)
         {

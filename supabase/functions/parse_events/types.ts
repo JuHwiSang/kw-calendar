@@ -78,5 +78,5 @@ export const CategoryIdMap: Record<EventCategory, number> = {
     ACTIVITY: 6,
     LIFE: 7,
     VOLUNTEER: 8,
-    OTHER: 7,
+    OTHER: 9,
 }

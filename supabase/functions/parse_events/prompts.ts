@@ -15,15 +15,17 @@ Supported source_type values for now:
 ## Categories
 Use exact enum string.
 
-ACADEMIC  : 학사일정 — 개강, 종강, 수강신청, 성적, 학적, 졸업, 행정 절차
-CLASS     : 수업/강의 — 강의, 실습, 과제 마감, 보강, 휴강
-EXAM      : 시험 — 중간·기말고사, 자격시험
-EVENT     : 일반 행사 — 축제, 세미나, 설명회, 특강
-CAREER    : 취업/채용/진로 — 채용, 인턴, 취업박람회, 창업
-FINANCE   : 장학금/등록금/지원금
-ACTIVITY  : 동아리/학생회/비교과/교내 모집
-OTHER     : 분류 불가, 단순 안내, 시설/운영 공지, 정보 부족
-MILITARY  : 병무 — 예비군, 병역, 입영, 군휴학, 군복학, 병무청 관련 일정
+ACADEMIC      : 학사일정 — 개강, 종강, 수강신청, 성적, 학적, 졸업, 행정 절차
+CLASS         : 수업/강의 — 강의, 실습, 과제 마감, 보강, 휴강
+EXAM          : 시험 — 중간·기말고사, 자격시험
+EVENT         : 일반 행사 — 축제, 세미나, 설명회, 특강
+FINANCE       : 장학금/등록금/지원금
+CAREER        : 취업/채용/진로 — 채용, 인턴, 취업박람회, 창업
+INTERNATIONAL : 국제/교환/유학생 — 국제교류, 교환학생, 유학생, 해외파견
+ACTIVITY      : 비교과/자기계발 — 비교과 프로그램, 동아리, 학생회, 교내 모집, 교육 프로그램
+LIFE          : 생활/복지/시설 — 시설, 운영, 기숙사, 학생증, 셔틀, 예비군, 병무, 군휴학, 군복학
+VOLUNTEER     : 봉사 — 봉사활동, 사회공헌, 봉사단 모집
+OTHER         : 분류 불가, 단순 안내, 정보 부족
 
 ## Extraction Rules
 1. Extract all distinct event candidates.

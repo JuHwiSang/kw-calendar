@@ -11,6 +11,9 @@ public class LocalDbService : ILocalDbService, IDisposable
     {
         _db = new KwCalendarDbContext(dbPath);
         _db.Database.EnsureCreated();
+        // EnsureCreated는 신규 컬럼을 추가하지 않으므로 기존 DB에 수동으로 추가
+        try { _db.Database.ExecuteSqlRaw("ALTER TABLE Events ADD COLUMN IsOneDayBeforeNotified INTEGER NOT NULL DEFAULT 0"); } catch { }
+        try { _db.Database.ExecuteSqlRaw("ALTER TABLE Events ADD COLUMN IsSameDayNotified INTEGER NOT NULL DEFAULT 0"); } catch { }
     }
 
     public async Task<IReadOnlyList<Event>> GetEventsByDateRangeAsync(DateTime start, DateTime end, CancellationToken ct = default)
@@ -56,7 +59,8 @@ public class LocalDbService : ILocalDbService, IDisposable
                 existing.NoticeDt = ev.NoticeDt;
                 existing.ExternalLink = ev.ExternalLink;
                 existing.CategoryId = ev.CategoryId;
-                // IsFavorited 보존
+                // 클라이언트 전용 필드 보존
+                // IsFavorited, IsOneDayBeforeNotified, IsSameDayNotified는 변경하지 않음
             }
             else
             {
@@ -125,6 +129,15 @@ public class LocalDbService : ILocalDbService, IDisposable
         return row.IsFavorited;
     }
 
+    public async Task MarkEventNotificationsAsync(int eventId, bool? oneDayBefore, bool? sameDay, CancellationToken ct = default)
+    {
+        var row = await _db.Events.FindAsync([eventId], ct)
+            ?? throw new InvalidOperationException($"Event {eventId} not found.");
+        if (oneDayBefore.HasValue) row.IsOneDayBeforeNotified = oneDayBefore.Value;
+        if (sameDay.HasValue) row.IsSameDayNotified = sameDay.Value;
+        await _db.SaveChangesAsync(ct);
+    }
+
     public void Dispose() => _db.Dispose();
 }
 
@@ -159,6 +172,8 @@ internal class EventRow
     public string? ExternalLink { get; set; }
     public int CategoryId { get; set; }
     public bool IsFavorited { get; set; }
+    public bool IsOneDayBeforeNotified { get; set; }
+    public bool IsSameDayNotified { get; set; }
 
     public Event ToEvent() => new()
     {
@@ -172,6 +187,8 @@ internal class EventRow
         ExternalLink = ExternalLink,
         CategoryId = CategoryId,
         IsFavorited = IsFavorited,
+        IsOneDayBeforeNotified = IsOneDayBeforeNotified,
+        IsSameDayNotified = IsSameDayNotified,
     };
 
     public static EventRow FromEvent(Event e) => new()
@@ -186,6 +203,8 @@ internal class EventRow
         ExternalLink = e.ExternalLink,
         CategoryId = e.CategoryId,
         IsFavorited = e.IsFavorited,
+        IsOneDayBeforeNotified = e.IsOneDayBeforeNotified,
+        IsSameDayNotified = e.IsSameDayNotified,
     };
 }
 

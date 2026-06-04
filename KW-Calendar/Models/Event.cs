@@ -13,4 +13,6 @@ public class Event
     public int CategoryId { get; set; }
     // 클라이언트 전용 필드 — 서버 DB에 없음
     public bool IsFavorited { get; set; }
+    public bool IsOneDayBeforeNotified { get; set; }
+    public bool IsSameDayNotified { get; set; }
 }

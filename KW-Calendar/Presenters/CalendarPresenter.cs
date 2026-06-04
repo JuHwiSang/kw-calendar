@@ -37,7 +37,7 @@ public class CalendarPresenter
         _view.CategoryFavoriteToggleRequested += OnCategoryFavoriteToggleRequested;
 
         _view.DisplayedMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-        _ = LoadAllAsync();
+        _ = SyncAndRefreshAsync();
     }
 
     // --- 캘린더 내비게이션 ---
@@ -117,12 +117,8 @@ public class CalendarPresenter
         _view.Categories = catTask.Result;
     }
 
-    private async Task OpenEventDetailAsync(int eventId)
-    {
-        // TODO: retrieve event, construct EventDetailPresenter + view, show detail panel/dialog.
-        await Task.CompletedTask;
-    }
-
+  
+    
     private async Task SyncAndRefreshAsync()
     {
         if (_syncService.IsSyncing)
@@ -131,4 +127,53 @@ public class CalendarPresenter
         await _syncService.SyncEventsAsync();
         await LoadAllAsync();
     }
+    /*private async Task OpenEventDetailAsync(int eventId)
+    {
+        var detailView = new EventDetailView();
+        var detailPresenter = new EventDetailPresenter(detailView, _eventService);
+
+        //detailPresenter.Initialize(eventId);
+        await detailPresenter.InitializeAsync(eventId); //EventdetailPresenter.cs 수정된 메서드와 같이 수정
+
+        if (_view is System.Windows.Forms.Form owner)
+        {
+            detailView.ShowDialog(owner);
+        }
+        else
+        {
+            detailView.ShowDialog();
+        }
+
+        await LoadAllAsync();
+    }*/
+    private Task OpenEventDetailAsync(int eventId)
+    {
+        var detailView = new EventDetailView();
+        var detailPresenter = new EventDetailPresenter(detailView, _eventService);
+
+        detailPresenter.Initialize(eventId);
+
+        // detail에서 즐겨찾기 토글 시 캘린더도 즉시 반영.
+        detailPresenter.FavoriteToggled += async (s, ev) => await LoadAllAsync();
+
+        // 닫힐 때도 한 번 더 새로고침 (안전망).
+        detailView.FormClosed += async (s, e) => await LoadAllAsync();
+
+        // owner를 지정하면 detail이 항상 owner 위에 떠 owner 클릭 시 앞으로 못 옴.
+        // 모달리스 + 독립 z-order를 원하므로 owner 없이 Show.
+        detailView.Show();
+
+        return Task.CompletedTask;
+    }
+
+
+    //추가
+    /*private async Task SyncAndRefreshAsync()
+    {
+        if (_syncService.IsSyncing)
+            return;
+
+        await _syncService.SyncEventsAsync();
+        await LoadAllAsync();
+    }*/
 }

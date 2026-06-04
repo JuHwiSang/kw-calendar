@@ -12,7 +12,6 @@ namespace KW_Calendar.Views
 {
     public partial class CalendarView : Form, ICalendarView
     {
-        private const int FixedYear = 2026;
 
         private static readonly Font FontMonthTitle = new("맑은 고딕", 16F, FontStyle.Bold);
         private static readonly Font FontCategoryTitle = new("맑은 고딕", 11F, FontStyle.Bold);
@@ -26,8 +25,8 @@ namespace KW_Calendar.Views
 
         private readonly ToolTip categoryTooltip = new ToolTip { ShowAlways = true };
 
-        private int currentYear = FixedYear;
-        private int currentMonth = DateTime.Today.Year == FixedYear ? DateTime.Today.Month : 1;
+        private int currentYear = DateTime.Today.Year;
+        private int currentMonth = DateTime.Today.Month;
 
         //상세 패널 분리(삭제)
         //private int detailScrollY = 0;
@@ -447,7 +446,7 @@ namespace KW_Calendar.Views
                     }
 
                     bool isToday =
-                        today.Year == FixedYear &&
+                        today.Year == year &&
                         today.Month == month &&
                         today.Day == day;
 

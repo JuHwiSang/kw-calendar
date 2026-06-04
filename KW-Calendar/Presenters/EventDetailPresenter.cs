@@ -74,6 +74,6 @@ public class EventDetailPresenter
         _view.CurrentEvent = updated;
         FavoriteToggled?.Invoke(this, updated);
     }
-    
+
 }
 

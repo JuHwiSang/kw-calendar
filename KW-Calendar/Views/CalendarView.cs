@@ -309,11 +309,42 @@ namespace KW_Calendar.Views
 
         private const int ResizeBorder = 6;
 
+        // borderless(FormBorderStyle.None) Form은 WinForms가 WS_MINIMIZEBOX 비트를
+        // 윈도우 스타일에 안 넣음. 그 결과 Win+D("바탕화면 보기")가 이 창을 건너뜀.
+        // 메인 창은 Win+D에 정상 반응해야 하므로 비트를 직접 켠다.
+        // 참고: https://devblogs.microsoft.com/oldnewthing/20241021-00/?p=110393
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                const int WS_MINIMIZEBOX = 0x00020000;
+                var cp = base.CreateParams;
+                cp.Style |= WS_MINIMIZEBOX;
+                return cp;
+            }
+        }
+
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
             WindowHelpers.ApplyRoundedCorners(Handle);
+
+            // [DEBUG] WS_MINIMIZEBOX 비트 확인 — Win+D 면제 메커니즘 검증용.
+            const int GWL_STYLE = -16;
+            const int GWL_EXSTYLE = -20;
+            const int WS_MINIMIZEBOX = 0x00020000;
+            long style = GetWindowLongPtr(Handle, GWL_STYLE).ToInt64();
+            long exStyle = GetWindowLongPtr(Handle, GWL_EXSTYLE).ToInt64();
+            System.Diagnostics.Debug.WriteLine(
+                $"[CalendarView] Style=0x{style:X8} ExStyle=0x{exStyle:X8} " +
+                $"MinimizeBox(prop)={MinimizeBox} WS_MINIMIZEBOX={(style & WS_MINIMIZEBOX) != 0}");
+            Console.WriteLine(
+                $"[CalendarView] Style=0x{style:X8} ExStyle=0x{exStyle:X8} " +
+                $"MinimizeBox(prop)={MinimizeBox} WS_MINIMIZEBOX={(style & WS_MINIMIZEBOX) != 0}");
         }
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr", SetLastError = true)]
+        private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
         protected override void WndProc(ref Message m)
         {

@@ -27,11 +27,11 @@ namespace KW_Calendar
             var cats = new CategoryService(localDb);
 
             // TODO: CalendarView가 ICalendarView를 구현하면 아래 주석 해제
-            // var view = new CalendarView();
-            // var presenter = new CalendarPresenter(view, events, cats, sync);
-            // presenter.Initialize();
+            var view = new CalendarView();
+            var presenter = new CalendarPresenter(view, events, cats, sync);
+            presenter.Initialize();
 
-            Application.Run(new CalendarView());
+            Application.Run(view);
         }
     }
 }

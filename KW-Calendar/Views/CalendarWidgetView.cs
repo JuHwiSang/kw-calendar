@@ -32,16 +32,6 @@ namespace KW_Calendar.Views
             }
         }
 
-        // --- 입력 핸들러 ---
-
-        private void DragArea_MouseDown(object? sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                BeginSystemDrag();
-            }
-        }
-
         // --- ICalendarView ---
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

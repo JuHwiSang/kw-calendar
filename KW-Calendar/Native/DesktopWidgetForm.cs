@@ -11,8 +11,8 @@ namespace KW_Calendar.Native
     ///    있을 때 hwndInsertAfter를 HWND_BOTTOM으로 강제. (Rainmeter, VueMinder 방식)
     /// 2) WS_EX_TOOLWINDOW로 작업표시줄/Alt+Tab에서 제외, WS_EX_NOACTIVATE로
     ///    클릭해도 포커스를 가져가지 않게 한다.
-    /// 3) FormBorderStyle.None인 폼은 WinForms가 WS_MINIMIZEBOX 비트를 안 켜는데,
-    ///    그 결과 Win+D ("Show Desktop")가 이 창을 minimize 대상에서 건너뛴다.
+    /// 3) FormBorderStyle.None인 폼은 WinForms가 WS_MINIMIZEBOX 비트를 안 켜므로
+    ///    Win+D ("Show Desktop")가 이 창을 minimize 대상에서 자동으로 건너뛴다.
     ///    Win11 24H2 기준 Win+D 직후 잠시 안 보이긴 하지만, 다른 창이 활성화되면
     ///    바로 다시 보임.
     /// </summary>
@@ -39,13 +39,11 @@ namespace KW_Calendar.Native
         {
             get
             {
-                const int WS_MINIMIZEBOX = 0x00020000;
                 const int WS_EX_TOOLWINDOW = 0x00000080;
                 const int WS_EX_NOACTIVATE = 0x08000000;
 
                 var cp = base.CreateParams;
                 cp.ExStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
-                cp.Style &= ~WS_MINIMIZEBOX;
                 return cp;
             }
         }

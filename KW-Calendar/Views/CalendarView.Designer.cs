@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Windows.Forms;
+using KW_Calendar.Views.Controls;
 
 namespace KW_Calendar.Views
 {
@@ -12,21 +13,7 @@ namespace KW_Calendar.Views
         private Panel sideArea;
         private Panel divider;
 
-        private Panel panelHeader;
-        private Label btnPrev;
-        private Label btnNext;
-        private Label lblMonthYear;
-
-        private TableLayoutPanel tlpDaysOfWeek;
-        private Label lblSun;
-        private Label lblMon;
-        private Label lblTue;
-        private Label lblWed;
-        private Label lblThu;
-        private Label lblFri;
-        private Label lblSat;
-
-        private TableLayoutPanel tlpCalendar;
+        private CalendarGridControl calendarGrid;
 
         private RadioButton rbFav;
         private RadioButton rbAll;
@@ -86,21 +73,7 @@ namespace KW_Calendar.Views
             sideArea = new Panel();
             divider = new Panel();
 
-            panelHeader = new Panel();
-            btnPrev = new Label();
-            btnNext = new Label();
-            lblMonthYear = new Label();
-
-            tlpDaysOfWeek = new TableLayoutPanel();
-            lblSun = new Label();
-            lblMon = new Label();
-            lblTue = new Label();
-            lblWed = new Label();
-            lblThu = new Label();
-            lblFri = new Label();
-            lblSat = new Label();
-
-            tlpCalendar = new TableLayoutPanel();
+            calendarGrid = new CalendarGridControl();
 
             rbFav = new RadioButton();
             rbAll = new RadioButton();
@@ -145,12 +118,10 @@ namespace KW_Calendar.Views
             mainCard.SuspendLayout();
             leftArea.SuspendLayout();
             sideArea.SuspendLayout();
-            panelHeader.SuspendLayout();
-            tlpDaysOfWeek.SuspendLayout();
 
-            // 
+            //
             // CalendarView
-            // 
+            //
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
             ClientSize = new Size(832, 668);
@@ -191,96 +162,15 @@ namespace KW_Calendar.Views
             leftArea.Padding = new Padding(26, 28, 26, 6);
             leftArea.Name = "leftArea";
 
-            // 
-            // panelHeader
-            // 
-            panelHeader.BackColor = Color.White;
-            panelHeader.Dock = DockStyle.Top;
-            panelHeader.Height = 58;
-            panelHeader.Name = "panelHeader";
+            //
+            // calendarGrid (헤더+요일+그리드 묶음)
+            //
+            calendarGrid.Dock = DockStyle.Fill;
+            calendarGrid.Name = "calendarGrid";
 
             //
-            // btnPrev
-            //
-            btnPrev.Dock = DockStyle.Left;
-            btnPrev.Width = 56;
-            btnPrev.Name = "btnPrev";
-            btnPrev.Text = "‹";
-            btnPrev.TextAlign = ContentAlignment.MiddleCenter;
-            btnPrev.BackColor = Color.White;
-            btnPrev.Cursor = Cursors.Hand;
-
-            //
-            // lblMonthYear
-            //
-            lblMonthYear.Dock = DockStyle.Fill;
-            lblMonthYear.Name = "lblMonthYear";
-            lblMonthYear.Text = "2026년 5월";
-            lblMonthYear.TextAlign = ContentAlignment.MiddleCenter;
-
-            //
-            // btnNext
-            //
-            btnNext.Dock = DockStyle.Right;
-            btnNext.Width = 56;
-            btnNext.Name = "btnNext";
-            btnNext.Text = "›";
-            btnNext.TextAlign = ContentAlignment.MiddleCenter;
-            btnNext.BackColor = Color.White;
-            btnNext.Cursor = Cursors.Hand;
-
-            // Add 순서: Fill인 lblMonthYear를 가장 먼저(마지막에 dock 처리되어 남은 공간 차지).
-            panelHeader.Controls.Add(lblMonthYear);
-            panelHeader.Controls.Add(btnPrev);
-            panelHeader.Controls.Add(btnNext);
-
-            // 
-            // tlpDaysOfWeek
-            // 
-            tlpDaysOfWeek.BackColor = Color.White;
-            tlpDaysOfWeek.ColumnCount = 7;
-            tlpDaysOfWeek.RowCount = 1;
-            tlpDaysOfWeek.Dock = DockStyle.Top;
-            tlpDaysOfWeek.Height = 30;
-            tlpDaysOfWeek.Name = "tlpDaysOfWeek";
-
-            for (int i = 0; i < 7; i++)
-            {
-                tlpDaysOfWeek.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / 7F));
-            }
-
-            tlpDaysOfWeek.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-
-            lblSun.Text = "일";
-            lblMon.Text = "월";
-            lblTue.Text = "화";
-            lblWed.Text = "수";
-            lblThu.Text = "목";
-            lblFri.Text = "금";
-            lblSat.Text = "토";
-
-            Label[] dayLabels = { lblSun, lblMon, lblTue, lblWed, lblThu, lblFri, lblSat };
-
-            for (int i = 0; i < dayLabels.Length; i++)
-            {
-                dayLabels[i].Dock = DockStyle.Fill;
-                dayLabels[i].TextAlign = ContentAlignment.MiddleCenter;
-                dayLabels[i].BackColor = Color.White;
-                tlpDaysOfWeek.Controls.Add(dayLabels[i], i, 0);
-            }
-
-            // 
-            // tlpCalendar
-            // 
-            tlpCalendar.BackColor = Color.White;
-            tlpCalendar.ColumnCount = 7;
-            tlpCalendar.RowCount = 5;
-            tlpCalendar.Dock = DockStyle.Fill;
-            tlpCalendar.Name = "tlpCalendar";
-
-            // 
             // rbFav
-            // 
+            //
             rbFav.AutoSize = true;
             rbFav.Location = new Point(20, 50);
             rbFav.Name = "rbFav";
@@ -290,9 +180,9 @@ namespace KW_Calendar.Views
             rbFav.Text = "즐겨찾기 일정";
             rbFav.UseVisualStyleBackColor = false;
 
-            // 
+            //
             // rbAll
-            // 
+            //
             rbAll.AutoSize = true;
             rbAll.Checked = true;
             rbAll.Location = new Point(20, 72);
@@ -303,9 +193,9 @@ namespace KW_Calendar.Views
             rbAll.Text = "전체 일정";
             rbAll.UseVisualStyleBackColor = false;
 
-            // 
+            //
             // lblCategoryTitle
-            // 
+            //
             lblCategoryTitle.Location = new Point(22, 116);
             lblCategoryTitle.Size = new Size(190, 26);
             lblCategoryTitle.Name = "lblCategoryTitle";
@@ -313,9 +203,9 @@ namespace KW_Calendar.Views
             lblCategoryTitle.TextAlign = ContentAlignment.MiddleLeft;
             lblCategoryTitle.BackColor = Color.Transparent;
 
-            // 
+            //
             // flpCategories
-            // 
+            //
             flpCategories.Location = new Point(10, 154);
             flpCategories.Size = new Size(224, 430);
             flpCategories.Name = "flpCategories";
@@ -329,9 +219,9 @@ namespace KW_Calendar.Views
             sideArea.Controls.Add(lblCategoryTitle);
             sideArea.Controls.Add(flpCategories);
 
-            // 
+            //
             // detailPanel
-            // 
+            //
             detailPanel.Location = new Point(76, 36);
             detailPanel.Size = new Size(475, 548);
             detailPanel.BorderRadius = 16;
@@ -342,17 +232,17 @@ namespace KW_Calendar.Views
             detailPanel.Visible = false;
             detailPanel.Name = "detailPanel";
 
-            // 
+            //
             // detailHeader
-            // 
+            //
             detailHeader.Location = new Point(0, 0);
             detailHeader.Size = new Size(475, 74);
             detailHeader.BackColor = Color.FromArgb(254, 226, 226);
             detailHeader.Name = "detailHeader";
 
-            // 
+            //
             // lblDetailStar
-            // 
+            //
             lblDetailStar.Location = new Point(20, 19);
             lblDetailStar.Size = new Size(34, 34);
             lblDetailStar.Text = "★";
@@ -362,9 +252,9 @@ namespace KW_Calendar.Views
             lblDetailStar.BackColor = Color.Transparent;
             lblDetailStar.Name = "lblDetailStar";
 
-            // 
+            //
             // lblDetailTitle
-            // 
+            //
             lblDetailTitle.Location = new Point(62, 16);
             lblDetailTitle.Size = new Size(330, 42);
             lblDetailTitle.Text = "일정 이름";
@@ -374,9 +264,9 @@ namespace KW_Calendar.Views
             lblDetailTitle.BackColor = Color.Transparent;
             lblDetailTitle.Name = "lblDetailTitle";
 
-            // 
+            //
             // lblDetailClose
-            // 
+            //
             lblDetailClose.Location = new Point(428, 18);
             lblDetailClose.Size = new Size(34, 34);
             lblDetailClose.Text = "×";
@@ -387,26 +277,26 @@ namespace KW_Calendar.Views
             lblDetailClose.Cursor = Cursors.Hand;
             lblDetailClose.Name = "lblDetailClose";
 
-            // 
+            //
             // detailBody
-            // 
+            //
             detailBody.Location = new Point(0, 74);
             detailBody.Size = new Size(453, 474);
             detailBody.BackColor = Color.White;
             detailBody.AutoScroll = false;
             detailBody.Name = "detailBody";
 
-            // 
+            //
             // detailContent
-            // 
+            //
             detailContent.Location = new Point(0, 0);
             detailContent.Size = new Size(453, 620);
             detailContent.BackColor = Color.White;
             detailContent.Name = "detailContent";
 
-            // 
+            //
             // iconTime
-            // 
+            //
             iconTime.Location = new Point(20, 24);
             iconTime.Size = new Size(42, 42);
             iconTime.BorderRadius = 10;
@@ -423,9 +313,9 @@ namespace KW_Calendar.Views
 
             iconTime.Controls.Add(lblTimeIcon);
 
-            // 
+            //
             // lblDetailTimeTitle
-            // 
+            //
             lblDetailTimeTitle.Location = new Point(78, 24);
             lblDetailTimeTitle.Size = new Size(300, 22);
             lblDetailTimeTitle.Text = "일시";
@@ -433,9 +323,9 @@ namespace KW_Calendar.Views
             lblDetailTimeTitle.ForeColor = Color.FromArgb(107, 114, 128);
             lblDetailTimeTitle.BackColor = Color.Transparent;
 
-            // 
+            //
             // lblDetailTimeValue
-            // 
+            //
             lblDetailTimeValue.Location = new Point(78, 47);
             lblDetailTimeValue.Size = new Size(320, 26);
             lblDetailTimeValue.Text = "14:00 - 16:00";
@@ -443,9 +333,9 @@ namespace KW_Calendar.Views
             lblDetailTimeValue.ForeColor = Color.FromArgb(17, 24, 39);
             lblDetailTimeValue.BackColor = Color.Transparent;
 
-            // 
+            //
             // iconPlace
-            // 
+            //
             iconPlace.Location = new Point(20, 96);
             iconPlace.Size = new Size(42, 42);
             iconPlace.BorderRadius = 10;
@@ -462,9 +352,9 @@ namespace KW_Calendar.Views
 
             iconPlace.Controls.Add(lblPlaceIcon);
 
-            // 
+            //
             // lblDetailPlaceTitle
-            // 
+            //
             lblDetailPlaceTitle.Location = new Point(78, 96);
             lblDetailPlaceTitle.Size = new Size(300, 22);
             lblDetailPlaceTitle.Text = "장소";
@@ -472,9 +362,9 @@ namespace KW_Calendar.Views
             lblDetailPlaceTitle.ForeColor = Color.FromArgb(107, 114, 128);
             lblDetailPlaceTitle.BackColor = Color.Transparent;
 
-            // 
+            //
             // lblDetailPlaceValue
-            // 
+            //
             lblDetailPlaceValue.Location = new Point(78, 119);
             lblDetailPlaceValue.Size = new Size(320, 26);
             lblDetailPlaceValue.Text = "소프트웨어관 301호";
@@ -482,9 +372,9 @@ namespace KW_Calendar.Views
             lblDetailPlaceValue.ForeColor = Color.FromArgb(17, 24, 39);
             lblDetailPlaceValue.BackColor = Color.Transparent;
 
-            // 
+            //
             // iconOriginal
-            // 
+            //
             iconOriginal.Location = new Point(20, 174);
             iconOriginal.Size = new Size(42, 42);
             iconOriginal.BorderRadius = 10;
@@ -501,9 +391,9 @@ namespace KW_Calendar.Views
 
             iconOriginal.Controls.Add(lblOriginalIcon);
 
-            // 
+            //
             // lblDetailOriginalTitle
-            // 
+            //
             lblDetailOriginalTitle.Location = new Point(78, 174);
             lblDetailOriginalTitle.Size = new Size(300, 24);
             lblDetailOriginalTitle.Text = "상세 내용 (원문)";
@@ -511,9 +401,9 @@ namespace KW_Calendar.Views
             lblDetailOriginalTitle.ForeColor = Color.FromArgb(107, 114, 128);
             lblDetailOriginalTitle.BackColor = Color.Transparent;
 
-            // 
+            //
             // originalTextBox
-            // 
+            //
             originalTextBox.Location = new Point(78, 204);
             originalTextBox.Size = new Size(345, 225);
             originalTextBox.BorderRadius = 14;
@@ -522,9 +412,9 @@ namespace KW_Calendar.Views
             originalTextBox.FillColor = Color.FromArgb(249, 250, 251);
             originalTextBox.BackColor = Color.Transparent;
 
-            // 
+            //
             // lblDetailOriginalValue
-            // 
+            //
             lblDetailOriginalValue.Location = new Point(16, 14);
             lblDetailOriginalValue.Size = new Size(313, 195);
             lblDetailOriginalValue.Text = "";
@@ -535,9 +425,9 @@ namespace KW_Calendar.Views
 
             originalTextBox.Controls.Add(lblDetailOriginalValue);
 
-            // 
+            //
             // btnOriginalPage
-            // 
+            //
             btnOriginalPage.Location = new Point(20, 460);
             btnOriginalPage.Size = new Size(403, 48);
             btnOriginalPage.BorderRadius = 12;
@@ -546,9 +436,9 @@ namespace KW_Calendar.Views
             btnOriginalPage.BackColor = Color.Transparent;
             btnOriginalPage.Cursor = Cursors.Hand;
 
-            // 
+            //
             // lblOriginalPageText
-            // 
+            //
             lblOriginalPageText.Dock = DockStyle.Fill;
             lblOriginalPageText.Text = "↗ 원문 페이지로 이동";
             lblOriginalPageText.TextAlign = ContentAlignment.MiddleCenter;
@@ -572,17 +462,17 @@ namespace KW_Calendar.Views
 
             detailBody.Controls.Add(detailContent);
 
-            // 
+            //
             // detailScrollTrack
-            // 
+            //
             detailScrollTrack.Location = new Point(453, 74);
             detailScrollTrack.Size = new Size(22, 474);
             detailScrollTrack.BackColor = Color.White;
             detailScrollTrack.Name = "detailScrollTrack";
 
-            // 
+            //
             // lblScrollUp
-            // 
+            //
             lblScrollUp.Location = new Point(0, 0);
             lblScrollUp.Size = new Size(22, 22);
             lblScrollUp.Text = "▲";
@@ -592,9 +482,9 @@ namespace KW_Calendar.Views
             lblScrollUp.BackColor = Color.White;
             lblScrollUp.Name = "lblScrollUp";
 
-            // 
+            //
             // detailScrollThumb
-            // 
+            //
             detailScrollThumb.Location = new Point(8, 34);
             detailScrollThumb.Size = new Size(6, 340);
             detailScrollThumb.BorderRadius = 3;
@@ -603,9 +493,9 @@ namespace KW_Calendar.Views
             detailScrollThumb.BackColor = Color.Transparent;
             detailScrollThumb.Name = "detailScrollThumb";
 
-            // 
+            //
             // lblScrollDown
-            // 
+            //
             lblScrollDown.Location = new Point(0, 452);
             lblScrollDown.Size = new Size(22, 22);
             lblScrollDown.Text = "▼";
@@ -628,10 +518,8 @@ namespace KW_Calendar.Views
             detailPanel.Controls.Add(detailHeader);
 
             // Dock 순서: 먼저 add된 게 먼저 자리잡음.
-            // Fill인 tlpCalendar는 가장 마지막에 add해서 남은 공간을 채우게 한다.
-            leftArea.Controls.Add(tlpCalendar);
-            leftArea.Controls.Add(tlpDaysOfWeek);
-            leftArea.Controls.Add(panelHeader);
+            // Fill인 calendarGrid는 가장 마지막에 add해서 남은 공간을 채우게 한다.
+            leftArea.Controls.Add(calendarGrid);
             leftArea.Controls.Add(detailPanel);
 
             // Dock 처리는 add 역순(나중에 add된 게 먼저 자리잡음).
@@ -643,8 +531,6 @@ namespace KW_Calendar.Views
 
             Controls.Add(mainCard);
 
-            tlpDaysOfWeek.ResumeLayout(false);
-            panelHeader.ResumeLayout(false);
             sideArea.ResumeLayout(false);
             leftArea.ResumeLayout(false);
             mainCard.ResumeLayout(false);

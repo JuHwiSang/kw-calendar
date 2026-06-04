@@ -6,98 +6,30 @@ namespace KW_Calendar.Views
 {
     public partial class CalendarWidgetView : DesktopWidgetForm, ICalendarView
     {
-        private DateTime _displayedMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
-        private IReadOnlyDictionary<DateOnly, IReadOnlyList<Event>> _eventsByDay
-            = new Dictionary<DateOnly, IReadOnlyList<Event>>();
-        private IReadOnlyList<Event> _events = Array.Empty<Event>();
-        private IReadOnlyList<Category> _categories = Array.Empty<Category>();
+        // 화면 우측 상단에서 떨어뜨릴 여백.
+        private const int InitialMargin = 24;
 
         public CalendarWidgetView()
         {
             InitializeComponent();
-            RenderAll();
+
+            _calendarGrid.PreviousMonthRequested += (s, e) => PreviousMonthRequested?.Invoke(this, e);
+            _calendarGrid.NextMonthRequested += (s, e) => NextMonthRequested?.Invoke(this, e);
+            _calendarGrid.EventSelected += (s, id) => EventSelected?.Invoke(this, id);
         }
 
-        // ListBox 아이템으로 사용할 미니 DTO. 표시 텍스트 + 원본 id.
-        private sealed record ListItem(int Id, string Display)
+        protected override void OnLoad(EventArgs e)
         {
-            public override string ToString() => Display;
-        }
-
-        private void RenderAll()
-        {
-            RenderMonth();
-            RenderEvents();
-            RenderFavEvents();
-            RenderCategories();
-        }
-
-        private void RenderMonth()
-        {
-            _monthLabel.Text = $"{_displayedMonth:yyyy년 M월}";
-        }
-
-        private void RenderEvents()
-        {
-            var start = DateOnly.FromDateTime(_displayedMonth);
-            var end = DateOnly.FromDateTime(_displayedMonth.AddMonths(1).AddDays(-1));
-            var flat = _eventsByDay
-                .Where(kv => kv.Key >= start && kv.Key <= end)
-                .OrderBy(kv => kv.Key)
-                .SelectMany(kv => kv.Value)
-                .Select(ev => new ListItem(
-                    ev.Id,
-                    $"{ev.StartDt:MM-dd HH:mm}  {ev.Title}"))
-                .ToList();
-
-            _eventsList.BeginUpdate();
-            _eventsList.Items.Clear();
-            if (flat.Count == 0)
+            base.OnLoad(e);
+            // 기본 위치: 메인 화면 우측 상단에서 margin만큼 떨어진 곳.
+            var screen = Screen.FromControl(this) ?? Screen.PrimaryScreen;
+            if (screen != null)
             {
-                _eventsList.Items.Add(new ListItem(-1, "(이벤트 없음)"));
+                var area = screen.WorkingArea;
+                Location = new Point(
+                    area.Right - Width - InitialMargin,
+                    area.Top + InitialMargin);
             }
-            else
-            {
-                foreach (var it in flat) _eventsList.Items.Add(it);
-            }
-            _eventsList.EndUpdate();
-        }
-
-        private void RenderFavEvents()
-        {
-            _favEventsList.BeginUpdate();
-            _favEventsList.Items.Clear();
-            if (_events.Count == 0)
-            {
-                _favEventsList.Items.Add(new ListItem(-1, "(없음)"));
-            }
-            else
-            {
-                foreach (var ev in _events)
-                {
-                    _favEventsList.Items.Add(new ListItem(ev.Id, $"★ {ev.Title}"));
-                }
-            }
-            _favEventsList.EndUpdate();
-        }
-
-        private void RenderCategories()
-        {
-            _favCategoriesList.BeginUpdate();
-            _favCategoriesList.Items.Clear();
-            if (_categories.Count == 0)
-            {
-                _favCategoriesList.Items.Add(new ListItem(-1, "(없음)"));
-            }
-            else
-            {
-                foreach (var c in _categories)
-                {
-                    var star = c.IsFavorited ? "★" : "☆";
-                    _favCategoriesList.Items.Add(new ListItem(c.Id, $"{star} {c.Name}"));
-                }
-            }
-            _favCategoriesList.EndUpdate();
         }
 
         // --- 입력 핸들러 ---
@@ -110,82 +42,41 @@ namespace KW_Calendar.Views
             }
         }
 
-        private void EventsList_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            if (_eventsList.SelectedItem is ListItem { Id: > 0 } it)
-            {
-                EventSelected?.Invoke(this, it.Id);
-                _eventsList.ClearSelected();
-            }
-        }
-
-        private void FavEventsList_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            if (_favEventsList.SelectedItem is ListItem { Id: > 0 } it)
-            {
-                EventFavoriteToggleRequested?.Invoke(this, it.Id);
-                _favEventsList.ClearSelected();
-            }
-        }
-
-        private void FavCategoriesList_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            if (_favCategoriesList.SelectedItem is ListItem { Id: > 0 } it)
-            {
-                CategoryFavoriteToggleRequested?.Invoke(this, it.Id);
-                _favCategoriesList.ClearSelected();
-            }
-        }
-
         // --- ICalendarView ---
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
         public DateTime DisplayedMonth
         {
-            get => _displayedMonth;
-            set
-            {
-                _displayedMonth = value;
-                RenderMonth();
-                RenderEvents();
-            }
+            get => _calendarGrid.DisplayedMonth;
+            set => _calendarGrid.DisplayedMonth = value;
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
         public IReadOnlyDictionary<DateOnly, IReadOnlyList<Event>> EventsByDay
         {
-            get => _eventsByDay;
-            set
-            {
-                _eventsByDay = value ?? new Dictionary<DateOnly, IReadOnlyList<Event>>();
-                RenderEvents();
-            }
+            get => _calendarGrid.EventsByDay;
+            set => _calendarGrid.EventsByDay = value;
         }
+
+        // 위젯에는 즐겨찾기 패널이 없지만, 인터페이스 충족을 위해 보관만 한다.
+        private IReadOnlyList<Event> _events = Array.Empty<Event>();
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
         public new IReadOnlyList<Event> Events
         {
             get => _events;
-            set
-            {
-                _events = value ?? Array.Empty<Event>();
-                RenderFavEvents();
-            }
+            set => _events = value ?? Array.Empty<Event>();
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
         public IReadOnlyList<Category> Categories
         {
-            get => _categories;
-            set
-            {
-                _categories = value ?? Array.Empty<Category>();
-                RenderCategories();
-            }
+            get => _calendarGrid.Categories;
+            set => _calendarGrid.Categories = value;
         }
 
         public event EventHandler? PreviousMonthRequested;

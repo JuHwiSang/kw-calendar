@@ -193,5 +193,6 @@ namespace KW_Calendar.Views
         public event EventHandler<int>? EventSelected;
         public event EventHandler<int>? EventFavoriteToggleRequested;
         public event EventHandler<int>? CategoryFavoriteToggleRequested;
+        public event EventHandler? SyncRequested;
     }
 }

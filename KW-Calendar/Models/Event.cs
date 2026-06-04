@@ -6,7 +6,7 @@ public class Event
     public string Title { get; set; } = string.Empty;
     public string? Body { get; set; }
     public DateTime StartDt { get; set; }
-    public DateTime EndDt { get; set; }
+    public DateTime? EndDt { get; set; }
     public bool IsAllDay { get; set; }
     public DateTime? NoticeDt { get; set; }
     public string? ExternalLink { get; set; }

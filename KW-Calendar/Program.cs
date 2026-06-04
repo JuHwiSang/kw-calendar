@@ -27,15 +27,17 @@ namespace KW_Calendar
             var events = new EventService(localDb);
             var cats = new CategoryService(localDb);
 
-            // TODO: CalendarView가 ICalendarView를 구현하면 메인 창에도 Presenter 연결
-            var mainView = new CalendarView();
+            // TODO: CalendarView가 ICalendarView를 구현하면 아래 주석 해제
+            var view = new CalendarView();
+            var presenter = new CalendarPresenter(view, events, cats, sync);
+            presenter.Initialize();
 
             var widget = new CalendarWidgetView();
             var widgetPresenter = new CalendarPresenter(widget, events, cats, sync);
             widgetPresenter.Initialize();
             widget.Show();
 
-            Application.Run(mainView);
+            Application.Run(view);
         }
     }
 }

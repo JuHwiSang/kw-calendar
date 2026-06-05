@@ -29,7 +29,7 @@ public class CalendarPresenter
     {
         _view.PreviousMonthRequested += OnPreviousMonthRequested;
         _view.NextMonthRequested += OnNextMonthRequested;
-        // _view.DaySelected += OnDaySelected;              // TODO: 날짜 선택 (우선순위 낮음)
+        _view.AddEventRequested += OnAddEventRequested;
         _view.EventSelected += OnEventSelected;
         // _view.ShowFavoritesOnlyChanged += OnShowFavoritesOnlyChanged;  // TODO: 즐겨찾기만 보기 필터 (우선순위 낮음)
         _view.SyncRequested += OnSyncRequested;
@@ -48,7 +48,22 @@ public class CalendarPresenter
     private async void OnNextMonthRequested(object? sender, EventArgs e)
         => await NavigateMonthAsync(1);
 
-    // private void OnDaySelected(object? sender, DateOnly date) { }  // TODO: 날짜 선택 (우선순위 낮음)
+    private async void OnAddEventRequested(object? sender, DateOnly date)
+    {
+        try
+        {
+            var addView = new AddEventView();
+            var addPresenter = new AddEventPresenter(addView, _eventService, _categoryService);
+            await addPresenter.InitializeAsync(date);
+            addView.ShowDialog();
+            await LoadAllAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"일정 추가 창을 여는 중 오류가 발생했습니다.\n{ex.Message}",
+                "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
 
     private async void OnEventSelected(object? sender, int eventId)
         => await OpenEventDetailAsync(eventId);
@@ -153,10 +168,8 @@ public class CalendarPresenter
 
         detailPresenter.Initialize(eventId);
 
-        // detail에서 즐겨찾기 토글 시 캘린더도 즉시 반영.
         detailPresenter.FavoriteToggled += async (s, ev) => await LoadAllAsync();
 
-        // 닫힐 때도 한 번 더 새로고침 (안전망).
         detailView.FormClosed += async (s, e) => await LoadAllAsync();
 
         // owner를 지정하면 detail이 항상 owner 위에 떠 owner 클릭 시 앞으로 못 옴.

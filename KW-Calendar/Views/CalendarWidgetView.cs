@@ -71,6 +71,7 @@ namespace KW_Calendar.Views
 
         public event EventHandler? PreviousMonthRequested;
         public event EventHandler? NextMonthRequested;
+        public event EventHandler<DateOnly>? AddEventRequested;  // 위젯에서는 발화하지 않음
         public event EventHandler<int>? EventSelected;
         public event EventHandler<int>? EventFavoriteToggleRequested;
         public event EventHandler<int>? CategoryFavoriteToggleRequested;

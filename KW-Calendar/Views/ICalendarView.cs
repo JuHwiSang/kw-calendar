@@ -18,7 +18,7 @@ public interface ICalendarView
     // 캘린더 내비게이션
     event EventHandler PreviousMonthRequested;
     event EventHandler NextMonthRequested;
-    // event EventHandler<DateOnly> DaySelected;        // TODO: 날짜 선택 (우선순위 낮음)
+    event EventHandler<DateOnly> AddEventRequested;     // payload: 선택된 날짜
     event EventHandler<int> EventSelected;              // payload: event Id
     // event EventHandler<bool> ShowFavoritesOnlyChanged;  // TODO: 즐겨찾기만 보기 필터 (우선순위 낮음)
     event EventHandler SyncRequested;               //  수동 동기화 요청 (우선순위 낮음)

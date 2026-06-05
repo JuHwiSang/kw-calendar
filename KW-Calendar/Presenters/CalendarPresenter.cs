@@ -169,6 +169,27 @@ public class CalendarPresenter
         detailPresenter.Initialize(eventId);
 
         detailPresenter.FavoriteToggled += async (s, ev) => await LoadAllAsync();
+        detailPresenter.DeleteRequested += async (s, id) => await LoadAllAsync();
+        detailPresenter.EditRequested += async (s, id) =>
+        {
+            try
+            {
+                var ev = await _eventService.GetEventByIdAsync(id);
+                if (ev == null) return;
+                var editView = new AddEventView();
+                var editPresenter = new EditEventPresenter(editView, _eventService, _categoryService, ev);
+                await editPresenter.InitializeAsync();
+                editView.ShowDialog();
+                if (editPresenter.WasSaved)
+                    await detailPresenter.ReloadAsync();
+                await LoadAllAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"일정 편집 창을 여는 중 오류가 발생했습니다.\n{ex.Message}",
+                    "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        };
 
         detailView.FormClosed += async (s, e) => await LoadAllAsync();
 

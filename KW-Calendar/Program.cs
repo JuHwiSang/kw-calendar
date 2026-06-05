@@ -80,17 +80,26 @@ namespace KW_Calendar
             instance.OpenRequested += (_, _) =>
             {
                 if (view.IsHandleCreated)
-                    view.BeginInvoke(() => view.Show());
+                    view.BeginInvoke(() => ShowAndActivate(view));
             };
             view.HandleCreated += (_, _) => instance.StartListening();
 
             Application.Run(view);
         }
 
+        // X로 숨겨진 뒤 다시 띄울 때 최소화도 풀고 포커스도 가져온다.
+        private static void ShowAndActivate(Form view)
+        {
+            if (view.WindowState == FormWindowState.Minimized)
+                view.WindowState = FormWindowState.Normal;
+            view.Show();
+            view.Activate();
+        }
+
         private static NotifyIcon CreateTrayIcon(Form view)
         {
             var menu = new ContextMenuStrip();
-            menu.Items.Add("열기", null, (_, _) => view.Show());
+            menu.Items.Add("열기", null, (_, _) => ShowAndActivate(view));
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("종료", null, (_, _) => Application.Exit());
 
@@ -101,7 +110,7 @@ namespace KW_Calendar
                 Visible = true,
                 ContextMenuStrip = menu,
             };
-            icon.DoubleClick += (_, _) => view.Show();
+            icon.DoubleClick += (_, _) => ShowAndActivate(view);
             return icon;
         }
     }

@@ -7,7 +7,7 @@ import {
     markSourceItemParsed,
 } from "./db.ts"
 import { filterDuplicateEvents } from "./duplicate.ts"
-import { parseEventsWithLlm } from "./llm.ts"
+import { GeminiRateLimitError, parseEventsWithLlm } from "./llm.ts"
 import { toEventInsertRows } from "./parser.ts"
 
 Deno.serve(async (req) => {
@@ -65,6 +65,22 @@ Deno.serve(async (req) => {
                     sourceItemId: sourceItem.id,
                     error: message,
                 })
+
+                if (error instanceof GeminiRateLimitError) {
+                    console.warn("[SOURCE_ITEM_RATE_LIMIT_PENDING]", {
+                        sourceItemId: sourceItem.id,
+                        error: message,
+                    })
+
+                    results.push({
+                        sourceItemId: sourceItem.id,
+                        success: false,
+                        retryable: true,
+                        error: message,
+                    })
+
+                    continue
+                }
 
                 await markSourceItemFailed(sourceItem.id, message)
 

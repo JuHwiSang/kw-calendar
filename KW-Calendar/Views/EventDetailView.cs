@@ -38,6 +38,8 @@ public partial class EventDetailView : Form, IEventDetailView
 
     public event EventHandler<int> FavoriteToggleRequested = delegate { };
     public event EventHandler OpenExternalLinkRequested = delegate { };
+    public event EventHandler EditRequested = delegate { };
+    public event EventHandler DeleteRequested = delegate { };
     public event EventHandler ViewClosed = delegate { };
 
     public EventDetailView()
@@ -64,6 +66,8 @@ public partial class EventDetailView : Form, IEventDetailView
         btnFavorite.Click += BtnFavorite_Click;
         btnOpenExternalLink.Click += BtnOpenExternalLink_Click;
         lblOpenExternalLinkText.Click += BtnOpenExternalLink_Click;
+        btnEdit.Click += (s, e) => EditRequested(this, EventArgs.Empty);
+        btnDelete.Click += BtnDelete_Click;
         FormClosed += EventDetailView_FormClosed;
 
         scrollHost.SizeChanged += (s, e) => ReflowBody();
@@ -86,6 +90,17 @@ public partial class EventDetailView : Form, IEventDetailView
         OpenExternalLinkRequested(this, EventArgs.Empty);
     }
 
+    private void BtnDelete_Click(object? sender, EventArgs e)
+    {
+        var result = MessageBox.Show(
+            $"'{currentEvent.Title}' 일정을 삭제하시겠습니까?",
+            "삭제 확인", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+        if (result == DialogResult.Yes)
+            DeleteRequested(this, EventArgs.Empty);
+    }
+
+    public void CloseView() => Close();
+
     private void EventDetailView_FormClosed(object? sender, FormClosedEventArgs e)
     {
         ViewClosed(this, EventArgs.Empty);
@@ -101,6 +116,7 @@ public partial class EventDetailView : Form, IEventDetailView
 
         bool hasLink = !string.IsNullOrWhiteSpace(currentEvent.ExternalLink);
         footerArea.Visible = hasLink;
+        userActionsArea.Visible = currentEvent.IsUserAdded;
 
         ReflowBody();
         AdjustFormHeight();
@@ -109,6 +125,9 @@ public partial class EventDetailView : Form, IEventDetailView
 
     private static string FormatTimeRange(Event ev)
     {
+        if (ev.IsAllDay)
+            return $"{ev.StartDt:yyyy.MM.dd} 종일";
+
         if (ev.StartDt == default && ev.EndDt == null)
             return "-";
 
@@ -182,7 +201,8 @@ public partial class EventDetailView : Form, IEventDetailView
 
             int targetClientHeight = titleBar.Height
                 + clipped
-                + (footerArea.Visible ? footerArea.Height : 0);
+                + (footerArea.Visible ? footerArea.Height : 0)
+                + (userActionsArea.Visible ? userActionsArea.Height : 0);
 
             if (ClientSize.Height != targetClientHeight)
             {

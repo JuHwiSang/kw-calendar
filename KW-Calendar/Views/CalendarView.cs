@@ -64,6 +64,7 @@ namespace KW_Calendar.Views
 
         public event EventHandler PreviousMonthRequested;
         public event EventHandler NextMonthRequested;
+        public event EventHandler<DateOnly> AddEventRequested;
         public event EventHandler SyncRequested;
         public event EventHandler<int> EventSelected;
         public event EventHandler<int> EventFavoriteToggleRequested;
@@ -83,6 +84,7 @@ namespace KW_Calendar.Views
             calendarGrid.PreviousMonthRequested += (s, e) => PreviousMonthRequested?.Invoke(this, e);
             calendarGrid.NextMonthRequested += (s, e) => NextMonthRequested?.Invoke(this, e);
             calendarGrid.EventSelected += (s, id) => EventSelected?.Invoke(this, id);
+            calendarGrid.DaySelected += (s, date) => AddEventRequested?.Invoke(this, date);
 
             lblDetailClose.MouseEnter += (s, e) =>
             {

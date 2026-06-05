@@ -25,6 +25,10 @@ partial class EventDetailView
     private RoundedPanel btnOpenExternalLink;
     private Label lblOpenExternalLinkText;
 
+    private Panel userActionsArea;
+    private Button btnEdit;
+    private Button btnDelete;
+
     // 인터페이스 호환용 hidden 버튼. 실제 즐겨찾기 UI는 lblFavoriteStar.
     private Button btnFavorite;
 
@@ -63,6 +67,10 @@ partial class EventDetailView
         btnOpenExternalLink = new RoundedPanel();
         lblOpenExternalLinkText = new Label();
 
+        userActionsArea = new Panel();
+        btnEdit = new Button();
+        btnDelete = new Button();
+
         btnFavorite = new Button();
         lblTitle = new Label();
 
@@ -73,6 +81,7 @@ partial class EventDetailView
         bodySection.SuspendLayout();
         bodyBox.SuspendLayout();
         footerArea.SuspendLayout();
+        userActionsArea.SuspendLayout();
 
         //
         // EventDetailView
@@ -260,6 +269,39 @@ partial class EventDetailView
 
         footerArea.Controls.Add(btnOpenExternalLink);
 
+        //
+        // userActionsArea (편집·삭제 버튼, IsUserAdded 이벤트에만 표시)
+        //
+        userActionsArea.Dock = System.Windows.Forms.DockStyle.Bottom;
+        userActionsArea.Height = 60;
+        userActionsArea.BackColor = System.Drawing.Color.White;
+        userActionsArea.Padding = new System.Windows.Forms.Padding(20, 8, 20, 12);
+        userActionsArea.Visible = false;
+        userActionsArea.Name = "userActionsArea";
+
+        btnEdit.Text = "편집";
+        btnEdit.Size = new System.Drawing.Size(100, 32);
+        btnEdit.Location = new System.Drawing.Point(20, 8);
+        btnEdit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+        btnEdit.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(136, 19, 55);
+        btnEdit.ForeColor = System.Drawing.Color.FromArgb(136, 19, 55);
+        btnEdit.BackColor = System.Drawing.Color.White;
+        btnEdit.Cursor = System.Windows.Forms.Cursors.Hand;
+        btnEdit.Name = "btnEdit";
+
+        btnDelete.Text = "삭제";
+        btnDelete.Size = new System.Drawing.Size(100, 32);
+        btnDelete.Location = new System.Drawing.Point(130, 8);
+        btnDelete.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+        btnDelete.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(220, 38, 38);
+        btnDelete.ForeColor = System.Drawing.Color.FromArgb(220, 38, 38);
+        btnDelete.BackColor = System.Drawing.Color.White;
+        btnDelete.Cursor = System.Windows.Forms.Cursors.Hand;
+        btnDelete.Name = "btnDelete";
+
+        userActionsArea.Controls.Add(btnEdit);
+        userActionsArea.Controls.Add(btnDelete);
+
         // hidden
         btnFavorite.Visible = false;
         btnFavorite.Name = "btnFavorite";
@@ -267,11 +309,13 @@ partial class EventDetailView
         lblTitle.Name = "lblTitle";
 
         Controls.Add(scrollHost);
+        Controls.Add(userActionsArea);
         Controls.Add(footerArea);
         // titleBar는 코드에서 Add하고 BringToFront.
         Controls.Add(btnFavorite);
         Controls.Add(lblTitle);
 
+        userActionsArea.ResumeLayout(false);
         footerArea.ResumeLayout(false);
         bodyBox.ResumeLayout(false);
         bodySection.ResumeLayout(false);

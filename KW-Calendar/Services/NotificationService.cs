@@ -42,7 +42,7 @@ public class NotificationService : INotificationService
     {
         try
         {
-            var when = isDayBefore ? $"내일 ({ev.StartDt:M/d})" : $"오늘 ({ev.StartDt:M/d})";
+            var when = isDayBefore ? $"내일 ({ev.StartDt:M월 d일})" : $"오늘 ({ev.StartDt:M월 d일})";
             var builder = new ToastContentBuilder()
                 .AddText(ev.Title)
                 .AddText($"{when} 일정이 있습니다.");

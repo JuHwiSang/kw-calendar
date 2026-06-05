@@ -93,6 +93,7 @@ namespace KW_Calendar.Views.Controls
         public event EventHandler? PreviousMonthRequested;
         public event EventHandler? NextMonthRequested;
         public event EventHandler<int>? EventSelected;
+        public event EventHandler<DateOnly>? DaySelected;
 
         // --- 디자인 적용 ---
 
@@ -242,7 +243,7 @@ namespace KW_Calendar.Views.Controls
                         dayEvents = Array.Empty<Event>();
                     }
 
-                    dayCell.SetDay(day, isToday, dayEvents);
+                    dayCell.SetDay(date, isToday, dayEvents);
 
                     day++;
                 }
@@ -311,6 +312,7 @@ namespace KW_Calendar.Views.Controls
             private readonly Label _badgeText;
 
             private readonly EventTag[] _tagPool = new EventTag[MaxEventTags];
+            private DateOnly _date;
 
             public DayCell(CalendarGridControl owner)
             {
@@ -367,6 +369,10 @@ namespace KW_Calendar.Views.Controls
                 }
 
                 Panel.Resize += (s, e) => LayoutChildren();
+                Panel.Click += (s, e) =>
+                {
+                    if (_date != default) _owner.DaySelected?.Invoke(_owner, _date);
+                };
             }
 
             private void LayoutChildren()
@@ -404,6 +410,7 @@ namespace KW_Calendar.Views.Controls
 
             public void SetEmpty()
             {
+                _date = default;
                 _dayLabel.Visible = false;
                 _badge.Visible = false;
                 for (int i = 0; i < MaxEventTags; i++)
@@ -413,9 +420,10 @@ namespace KW_Calendar.Views.Controls
                 }
             }
 
-            public void SetDay(int day, bool isToday, IReadOnlyList<Event> dayEvents)
+            public void SetDay(DateOnly date, bool isToday, IReadOnlyList<Event> dayEvents)
             {
-                string dayText = day.ToString();
+                _date = date;
+                string dayText = date.Day.ToString();
 
                 if (isToday)
                 {
@@ -455,9 +463,9 @@ namespace KW_Calendar.Views.Controls
             private readonly CalendarGridControl _owner;
             public RoundedPanel Panel { get; }
             private readonly Label _label;
-            private int _eventId = -1;
+            private int _eventId = int.MinValue;
 
-            public bool IsAssigned => _eventId >= 0;
+            public bool IsAssigned => _eventId != int.MinValue;
 
             public EventTag(CalendarGridControl owner)
             {
@@ -489,7 +497,7 @@ namespace KW_Calendar.Views.Controls
 
             private void OnClick(object? sender, EventArgs e)
             {
-                if (_eventId >= 0)
+                if (_eventId != int.MinValue)
                     _owner.EventSelected?.Invoke(_owner, _eventId);
             }
 
@@ -504,7 +512,7 @@ namespace KW_Calendar.Views.Controls
 
             public void Clear()
             {
-                _eventId = -1;
+                _eventId = int.MinValue;
             }
         }
 

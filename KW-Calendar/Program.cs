@@ -57,9 +57,11 @@ namespace KW_Calendar
                 _ => notifications.CheckAndSendPendingNotificationsAsync().GetAwaiter().GetResult(),
                 null, GetDelayUntilNextNineAM(), TimeSpan.FromHours(24));
 
+            // TODO: view를 ICalendarView로만 다루지 않고 Form 이벤트(Shown/HandleCreated)에
+            //       직접 의존한다. Program.cs는 컴포지션 루트라 허용 범위지만,
+            //       ICalendarView가 라이프사이클 이벤트를 노출하도록 다듬는 안도 고려.
             var view = new CalendarView();
             var presenter = new CalendarPresenter(view, events, cats, sync);
-            instance.OpenRequested += (_, _) => presenter.RequestOpen();
             presenter.Initialize();
 
             // 메인 창이 떠서 활성화된 뒤에 위젯을 만들어 띄운다. 위젯이 핸들 생성 시점에

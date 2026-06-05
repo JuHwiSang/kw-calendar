@@ -27,10 +27,6 @@ public interface ICalendarView
     event EventHandler<int> EventFavoriteToggleRequested;     // payload: event Id
     event EventHandler<int> CategoryFavoriteToggleRequested;  // payload: category Id
 
-    // 강인성 — 다른 인스턴스가 깨움 신호 보냄
-    // TODO: X 버튼 → 트레이로 숨김은 View의 OnFormClosing 가로채기가 필요해 별도 티켓.
-    event EventHandler OpenRequested;
-
     // --- Presenter가 명령 ---
     void Show();
     void Hide();

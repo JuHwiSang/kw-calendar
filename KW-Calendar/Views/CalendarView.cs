@@ -147,6 +147,20 @@ namespace KW_Calendar.Views
             WindowHelpers.ApplyRoundedCorners(Handle);
         }
 
+        // X 버튼 / Alt+F4는 종료가 아닌 트레이로 숨김. 실제 종료는 트레이 메뉴
+        // "종료"가 부르는 Application.Exit() → CloseReason.ApplicationExitCall.
+        // OS 종료/세션 종료는 막지 않는다.
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                Hide();
+                return;
+            }
+            base.OnFormClosing(e);
+        }
+
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == WindowHelpers.WM_NCHITTEST)

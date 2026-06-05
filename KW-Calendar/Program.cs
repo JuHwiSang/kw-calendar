@@ -1,7 +1,8 @@
-using System.IO;
+using KW_Calendar.Native;
 using KW_Calendar.Presenters;
 using KW_Calendar.Services;
 using KW_Calendar.Views;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Timer = System.Threading.Timer;
 
@@ -22,6 +23,13 @@ namespace KW_Calendar
         [STAThread]
         static void Main()
         {
+            using var instance = SingleInstance.Acquire();
+            if (!instance.IsFirstInstance)
+            {
+                SingleInstance.NotifyExisting();
+                return;
+            }
+
             ApplicationConfiguration.Initialize();
 
             IConfiguration config = new ConfigurationBuilder()
@@ -49,6 +57,9 @@ namespace KW_Calendar
                 _ => notifications.CheckAndSendPendingNotificationsAsync().GetAwaiter().GetResult(),
                 null, GetDelayUntilNextNineAM(), TimeSpan.FromHours(24));
 
+            // TODO: view를 ICalendarView로만 다루지 않고 Form 이벤트(Shown/HandleCreated)에
+            //       직접 의존한다. Program.cs는 컴포지션 루트라 허용 범위지만,
+            //       ICalendarView가 라이프사이클 이벤트를 노출하도록 다듬는 안도 고려.
             var view = new CalendarView();
             var presenter = new CalendarPresenter(view, events, cats, sync);
             presenter.Initialize();
@@ -64,7 +75,43 @@ namespace KW_Calendar
                 widget.Show();
             };
 
+            using var tray = CreateTrayIcon(view);
+
+            instance.OpenRequested += (_, _) =>
+            {
+                if (view.IsHandleCreated)
+                    view.BeginInvoke(() => ShowAndActivate(view));
+            };
+            view.HandleCreated += (_, _) => instance.StartListening();
+
             Application.Run(view);
+        }
+
+        // X로 숨겨진 뒤 다시 띄울 때 최소화도 풀고 포커스도 가져온다.
+        private static void ShowAndActivate(Form view)
+        {
+            if (view.WindowState == FormWindowState.Minimized)
+                view.WindowState = FormWindowState.Normal;
+            view.Show();
+            view.Activate();
+        }
+
+        private static NotifyIcon CreateTrayIcon(Form view)
+        {
+            var menu = new ContextMenuStrip();
+            menu.Items.Add("열기", null, (_, _) => ShowAndActivate(view));
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("종료", null, (_, _) => Application.Exit());
+
+            var icon = new NotifyIcon
+            {
+                Icon = SystemIcons.Application,
+                Text = "KW-Calendar",
+                Visible = true,
+                ContextMenuStrip = menu,
+            };
+            icon.DoubleClick += (_, _) => ShowAndActivate(view);
+            return icon;
         }
     }
 }

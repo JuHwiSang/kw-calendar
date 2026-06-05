@@ -12,6 +12,8 @@ public class LocalDbService : ILocalDbService, IDisposable
         _db = new KwCalendarDbContext(dbPath);
         _db.Database.EnsureCreated();
         // EnsureCreated는 신규 컬럼을 추가하지 않으므로 기존 DB에 수동으로 추가
+        // TODO: 컬럼 추가가 반복되면 이 블록이 무한히 쌓인다.
+        //       SQLite 마이그레이션 전략(예: FluentMigrator, 버전 테이블)을 도입하는 것이 장기적으로 적합하다.
         try { _db.Database.ExecuteSqlRaw("ALTER TABLE Events ADD COLUMN IsOneDayBeforeNotified INTEGER NOT NULL DEFAULT 0"); } catch { }
         try { _db.Database.ExecuteSqlRaw("ALTER TABLE Events ADD COLUMN IsSameDayNotified INTEGER NOT NULL DEFAULT 0"); } catch { }
     }

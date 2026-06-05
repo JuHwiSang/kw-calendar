@@ -5,7 +5,8 @@ import {
 import { parseLlmResponse } from "./parser.ts"
 import type { LlmParsedEvent, SourceItem } from "./types.ts"
 
-const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-1.5-flash"
+const GEMINI_MODEL = "gemini-2.0-flash-lite"
+const MAX_GEMINI_RETRIES = 3
 
 type GeminiGenerateContentResponse = {
     candidates?: Array<{
@@ -15,6 +16,30 @@ type GeminiGenerateContentResponse = {
             }>
         }
     }>
+}
+export class GeminiRateLimitError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = "GeminiRateLimitError"
+    }
+}
+
+function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function getGeminiRetryDelayMs(attempt: number): number {
+    return 15_000 * (attempt + 1)
+}
+
+function isGeminiRateLimitResponse(status: number, errorText: string): boolean {
+    const normalized = errorText.toLowerCase()
+
+    return (
+        status === 429 ||
+        normalized.includes("rate limit") ||
+        normalized.includes("quota")
+    )
 }
 
 export async function parseEventsWithLlm(
@@ -86,9 +111,11 @@ async function callGeminiApi(
     userPrompt: string,
     apiKey: string,
 ): Promise<string> {
-    const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
-        {
+    const url =
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`
+
+    for (let attempt = 0; attempt <= MAX_GEMINI_RETRIES; attempt++) {
+        const response = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -118,26 +145,50 @@ async function callGeminiApi(
                     responseMimeType: "application/json",
                 },
             }),
-        },
-    )
+        })
 
-    if (!response.ok) {
-        const errorText = await response.text()
+        const responseText = await response.text()
+
+        if (response.ok) {
+            const data = JSON.parse(responseText) as GeminiGenerateContentResponse
+            const text = data.candidates?.[0]?.content?.parts
+                ?.map((part) => part.text ?? "")
+                .join("")
+                .trim()
+
+            if (!text) {
+                throw new Error("Gemini API response does not contain text")
+            }
+
+            return text
+        }
+
+        if (isGeminiRateLimitResponse(response.status, responseText)) {
+            if (attempt < MAX_GEMINI_RETRIES) {
+                const delayMs = getGeminiRetryDelayMs(attempt)
+
+                console.warn("[GEMINI_RATE_LIMIT_RETRY]", {
+                    attempt: attempt + 1,
+                    maxRetries: MAX_GEMINI_RETRIES,
+                    delayMs,
+                    status: response.status,
+                })
+
+                await sleep(delayMs)
+                continue
+            }
+
+            throw new GeminiRateLimitError(
+                `Gemini API rate limit exceeded after retries: ${response.status} ${responseText}`,
+            )
+        }
 
         throw new Error(
-            `Gemini API request failed: ${response.status} ${errorText}`,
+            `Gemini API request failed: ${response.status} ${responseText}`,
         )
     }
 
-    const data = (await response.json()) as GeminiGenerateContentResponse
-    const text = data.candidates?.[0]?.content?.parts
-        ?.map((part) => part.text ?? "")
-        .join("")
-        .trim()
-
-    if (!text) {
-        throw new Error("Gemini API response does not contain text")
-    }
-
-    return text
+    throw new Error("Gemini API request failed after retries")
 }
+
+ 

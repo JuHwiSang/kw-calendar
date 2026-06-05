@@ -5,7 +5,7 @@ import {
 import { parseLlmResponse } from "./parser.ts"
 import type { LlmParsedEvent, SourceItem } from "./types.ts"
 
-const GEMINI_MODEL = "gemini-2.0-flash-lite"
+const GEMINI_MODEL = "gemini-3.5-flash"
 const MAX_GEMINI_RETRIES = 3
 
 type GeminiGenerateContentResponse = {

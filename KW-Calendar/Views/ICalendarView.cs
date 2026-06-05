@@ -26,8 +26,4 @@ public interface ICalendarView
     // 즐겨찾기
     event EventHandler<int> EventFavoriteToggleRequested;     // payload: event Id
     event EventHandler<int> CategoryFavoriteToggleRequested;  // payload: category Id
-
-    // --- Presenter가 명령 ---
-    void Show();
-    void Hide();
 }

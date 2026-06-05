@@ -21,7 +21,7 @@ public interface ICalendarView
     // event EventHandler<DateOnly> DaySelected;        // TODO: 날짜 선택 (우선순위 낮음)
     event EventHandler<int> EventSelected;              // payload: event Id
     // event EventHandler<bool> ShowFavoritesOnlyChanged;  // TODO: 즐겨찾기만 보기 필터 (우선순위 낮음)
-    // event EventHandler SyncRequested;               // TODO: 수동 동기화 버튼 (우선순위 낮음)
+    event EventHandler SyncRequested;               //  수동 동기화 요청 (우선순위 낮음)
 
     // 즐겨찾기
     event EventHandler<int> EventFavoriteToggleRequested;     // payload: event Id

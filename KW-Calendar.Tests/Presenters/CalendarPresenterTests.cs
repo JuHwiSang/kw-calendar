@@ -59,9 +59,10 @@ public class CalendarPresenterTests
     public async Task PreviousMonth_DecreasesDisplayedMonth()
     {
         var initial = new DateTime(2026, 5, 1);
-        _view.DisplayedMonth.Returns(initial);
 
         _presenter.Initialize();
+        // Initialize()가 setter를 호출해 NSubstitute getter 반환값을 덮어쓰므로 재구성
+        _view.DisplayedMonth.Returns(initial);
         _view.PreviousMonthRequested += Raise.Event();
         await Task.Delay(100);
 
@@ -72,9 +73,10 @@ public class CalendarPresenterTests
     public async Task NextMonth_IncreasesDisplayedMonth()
     {
         var initial = new DateTime(2026, 5, 1);
-        _view.DisplayedMonth.Returns(initial);
 
         _presenter.Initialize();
+        // Initialize()가 setter를 호출해 NSubstitute getter 반환값을 덮어쓰므로 재구성
+        _view.DisplayedMonth.Returns(initial);
         _view.NextMonthRequested += Raise.Event();
         await Task.Delay(100);
 

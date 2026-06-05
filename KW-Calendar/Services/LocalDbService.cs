@@ -11,12 +11,17 @@ public class LocalDbService : ILocalDbService, IDisposable
     {
         _db = new KwCalendarDbContext(dbPath);
         _db.Database.EnsureCreated();
+        // EnsureCreated는 신규 컬럼을 추가하지 않으므로 기존 DB에 수동으로 추가
+        // TODO: 컬럼 추가가 반복되면 이 블록이 무한히 쌓인다.
+        //       SQLite 마이그레이션 전략(예: FluentMigrator, 버전 테이블)을 도입하는 것이 장기적으로 적합하다.
+        try { _db.Database.ExecuteSqlRaw("ALTER TABLE Events ADD COLUMN IsOneDayBeforeNotified INTEGER NOT NULL DEFAULT 0"); } catch { }
+        try { _db.Database.ExecuteSqlRaw("ALTER TABLE Events ADD COLUMN IsSameDayNotified INTEGER NOT NULL DEFAULT 0"); } catch { }
     }
 
     public async Task<IReadOnlyList<Event>> GetEventsByDateRangeAsync(DateTime start, DateTime end, CancellationToken ct = default)
     {
         return await _db.Events
-            .Where(e => e.StartDt <= end && e.EndDt >= start)
+            .Where(e => e.StartDt <= end && (e.EndDt ?? e.StartDt) >= start)
             .OrderBy(e => e.StartDt)
             .Select(r => r.ToEvent())
             .ToListAsync(ct);
@@ -56,7 +61,8 @@ public class LocalDbService : ILocalDbService, IDisposable
                 existing.NoticeDt = ev.NoticeDt;
                 existing.ExternalLink = ev.ExternalLink;
                 existing.CategoryId = ev.CategoryId;
-                // IsFavorited 보존
+                // 클라이언트 전용 필드 보존
+                // IsFavorited, IsOneDayBeforeNotified, IsSameDayNotified는 변경하지 않음
             }
             else
             {
@@ -125,6 +131,15 @@ public class LocalDbService : ILocalDbService, IDisposable
         return row.IsFavorited;
     }
 
+    public async Task MarkEventNotificationsAsync(int eventId, bool? oneDayBefore, bool? sameDay, CancellationToken ct = default)
+    {
+        var row = await _db.Events.FindAsync([eventId], ct)
+            ?? throw new InvalidOperationException($"Event {eventId} not found.");
+        if (oneDayBefore.HasValue) row.IsOneDayBeforeNotified = oneDayBefore.Value;
+        if (sameDay.HasValue) row.IsSameDayNotified = sameDay.Value;
+        await _db.SaveChangesAsync(ct);
+    }
+
     public void Dispose() => _db.Dispose();
 }
 
@@ -153,12 +168,14 @@ internal class EventRow
     public string Title { get; set; } = string.Empty;
     public string? Body { get; set; }
     public DateTime StartDt { get; set; }
-    public DateTime EndDt { get; set; }
+    public DateTime? EndDt { get; set; }
     public bool IsAllDay { get; set; }
     public DateTime? NoticeDt { get; set; }
     public string? ExternalLink { get; set; }
     public int CategoryId { get; set; }
     public bool IsFavorited { get; set; }
+    public bool IsOneDayBeforeNotified { get; set; }
+    public bool IsSameDayNotified { get; set; }
 
     public Event ToEvent() => new()
     {
@@ -172,6 +189,8 @@ internal class EventRow
         ExternalLink = ExternalLink,
         CategoryId = CategoryId,
         IsFavorited = IsFavorited,
+        IsOneDayBeforeNotified = IsOneDayBeforeNotified,
+        IsSameDayNotified = IsSameDayNotified,
     };
 
     public static EventRow FromEvent(Event e) => new()
@@ -186,6 +205,8 @@ internal class EventRow
         ExternalLink = e.ExternalLink,
         CategoryId = e.CategoryId,
         IsFavorited = e.IsFavorited,
+        IsOneDayBeforeNotified = e.IsOneDayBeforeNotified,
+        IsSameDayNotified = e.IsSameDayNotified,
     };
 }
 

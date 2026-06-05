@@ -28,4 +28,7 @@ public interface ILocalDbService
 
     /// <summary>IsFavorited를 토글하고 변경된 값을 반환.</summary>
     Task<bool> ToggleCategoryFavoriteAsync(int categoryId, CancellationToken ct = default);
+
+    /// <summary>알림 발송 완료 상태를 기록. null 전달 시 해당 필드 변경 안 함.</summary>
+    Task MarkEventNotificationsAsync(int eventId, bool? oneDayBefore, bool? sameDay, CancellationToken ct = default);
 }

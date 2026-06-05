@@ -24,4 +24,13 @@ public class EventService : IEventService
 
     public Task<IReadOnlyList<Event>> GetFavoritedEventsAsync(CancellationToken ct = default)
         => _localDb.GetFavoritedEventsAsync(ct);
+
+    public Task AddUserEventAsync(Event e, CancellationToken ct = default)
+        => _localDb.AddUserEventAsync(e, ct);
+
+    public Task DeleteUserEventAsync(int eventId, CancellationToken ct = default)
+        => _localDb.DeleteUserEventAsync(eventId, ct);
+
+    public Task UpdateUserEventAsync(Event e, CancellationToken ct = default)
+        => _localDb.UpdateUserEventAsync(e, ct);
 }

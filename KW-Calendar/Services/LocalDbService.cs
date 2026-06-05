@@ -16,6 +16,7 @@ public class LocalDbService : ILocalDbService, IDisposable
         //       SQLite 마이그레이션 전략(예: FluentMigrator, 버전 테이블)을 도입하는 것이 장기적으로 적합하다.
         try { _db.Database.ExecuteSqlRaw("ALTER TABLE Events ADD COLUMN IsOneDayBeforeNotified INTEGER NOT NULL DEFAULT 0"); } catch { }
         try { _db.Database.ExecuteSqlRaw("ALTER TABLE Events ADD COLUMN IsSameDayNotified INTEGER NOT NULL DEFAULT 0"); } catch { }
+        try { _db.Database.ExecuteSqlRaw("ALTER TABLE Events ADD COLUMN IsUserAdded INTEGER NOT NULL DEFAULT 0"); } catch { }
     }
 
     public async Task<IReadOnlyList<Event>> GetEventsByDateRangeAsync(DateTime start, DateTime end, CancellationToken ct = default)
@@ -140,6 +141,46 @@ public class LocalDbService : ILocalDbService, IDisposable
         await _db.SaveChangesAsync(ct);
     }
 
+    public async Task AddUserEventAsync(Event e, CancellationToken ct = default)
+    {
+        // 유저 이벤트는 음수 Id를 사용해 서버 이벤트(항상 양수 Id)와 Id 공간을 분리한다.
+        var minExisting = await _db.Events
+            .Where(r => r.IsUserAdded)
+            .Select(r => (int?)r.Id)
+            .MinAsync(ct);
+        var row = EventRow.FromEvent(e);
+        row.Id = (minExisting ?? 0) - 1;
+        row.IsFavorited = true;
+        row.IsUserAdded = true;
+        _db.Events.Add(row);
+        await _db.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteUserEventAsync(int eventId, CancellationToken ct = default)
+    {
+        var row = await _db.Events.FindAsync([eventId], ct)
+            ?? throw new InvalidOperationException($"Event {eventId} not found.");
+        if (!row.IsUserAdded)
+            throw new InvalidOperationException("서버 이벤트는 삭제할 수 없습니다.");
+        _db.Events.Remove(row);
+        await _db.SaveChangesAsync(ct);
+    }
+
+    public async Task UpdateUserEventAsync(Event e, CancellationToken ct = default)
+    {
+        var row = await _db.Events.FindAsync([e.Id], ct)
+            ?? throw new InvalidOperationException($"Event {e.Id} not found.");
+        if (!row.IsUserAdded)
+            throw new InvalidOperationException("서버 이벤트는 수정할 수 없습니다.");
+        row.Title = e.Title;
+        row.Body = e.Body;
+        row.StartDt = e.StartDt;
+        row.EndDt = e.EndDt;
+        row.IsAllDay = e.IsAllDay;
+        row.CategoryId = e.CategoryId;
+        await _db.SaveChangesAsync(ct);
+    }
+
     public void Dispose() => _db.Dispose();
 }
 
@@ -174,6 +215,7 @@ internal class EventRow
     public string? ExternalLink { get; set; }
     public int CategoryId { get; set; }
     public bool IsFavorited { get; set; }
+    public bool IsUserAdded { get; set; }
     public bool IsOneDayBeforeNotified { get; set; }
     public bool IsSameDayNotified { get; set; }
 
@@ -189,6 +231,7 @@ internal class EventRow
         ExternalLink = ExternalLink,
         CategoryId = CategoryId,
         IsFavorited = IsFavorited,
+        IsUserAdded = IsUserAdded,
         IsOneDayBeforeNotified = IsOneDayBeforeNotified,
         IsSameDayNotified = IsSameDayNotified,
     };
@@ -205,6 +248,7 @@ internal class EventRow
         ExternalLink = e.ExternalLink,
         CategoryId = e.CategoryId,
         IsFavorited = e.IsFavorited,
+        IsUserAdded = e.IsUserAdded,
         IsOneDayBeforeNotified = e.IsOneDayBeforeNotified,
         IsSameDayNotified = e.IsSameDayNotified,
     };

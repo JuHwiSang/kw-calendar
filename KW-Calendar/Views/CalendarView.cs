@@ -22,6 +22,10 @@ namespace KW_Calendar.Views
         private IReadOnlyList<Event> events = new List<Event>();
         private IReadOnlyList<Category> modelCategories = new List<Category>();
 
+        private readonly PictureBox refreshPictureBox = new();
+        private readonly System.Windows.Forms.Timer refreshAnimationTimer = new();
+        private float refreshRotationAngle = 0f;
+
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public DateTime DisplayedMonth
@@ -76,6 +80,7 @@ namespace KW_Calendar.Views
 
             ApplySideDesign();
             InitializeTitleBar();
+            InitializeRefreshPictureBox();
 
             rbAll.CheckedChanged += FilterRadio_CheckedChanged;
             rbFav.CheckedChanged += FilterRadio_CheckedChanged;
@@ -109,7 +114,83 @@ namespace KW_Calendar.Views
             lblCategoryTitle.Font = FontCategoryTitle;
             lblCategoryTitle.ForeColor = Color.FromArgb(31, 41, 55);
         }
+        private void InitializeRefreshPictureBox()
+        {
+            refreshPictureBox.Name = "refreshPictureBox";
+            refreshPictureBox.Size = new Size(36, 36);
+            refreshPictureBox.SizeMode = PictureBoxSizeMode.CenterImage;
+            refreshPictureBox.Cursor = Cursors.Hand;
+            refreshPictureBox.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+            refreshPictureBox.BackColor = Color.Transparent;
+            refreshPictureBox.TabStop = false;
 
+            refreshPictureBox.Paint += RefreshPictureBox_Paint;
+            refreshPictureBox.Click += RefreshPictureBox_Click;
+
+            refreshAnimationTimer.Interval = 16;
+            refreshAnimationTimer.Tick += RefreshAnimationTimer_Tick;
+
+            sideArea.Controls.Add(refreshPictureBox);
+            PositionRefreshPictureBox();
+            refreshPictureBox.BringToFront();
+
+            sideArea.Resize += (s, e) => PositionRefreshPictureBox();
+        }
+        private void RefreshAnimationTimer_Tick(object? sender, EventArgs e)
+        {
+            refreshRotationAngle += 18f;
+
+            if (refreshRotationAngle >= 360f)
+            {
+                refreshRotationAngle = 0f;
+                refreshAnimationTimer.Stop();
+            }
+
+            refreshPictureBox.Invalidate();
+        }
+
+        private void PositionRefreshPictureBox()
+        {
+            refreshPictureBox.Location = new Point(
+                sideArea.ClientSize.Width - refreshPictureBox.Width - 16,
+                sideArea.ClientSize.Height - refreshPictureBox.Height - 16
+            );
+        }
+
+        private void RefreshPictureBox_Paint(object? sender, PaintEventArgs e)
+        {
+            e.Graphics.Clear(sideArea.BackColor);
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+
+            using Font font = new("Segoe UI Symbol", 18F, FontStyle.Bold);
+            using Brush brush = new SolidBrush(Color.FromArgb(31, 41, 55));
+
+            const string text = "↻";
+            SizeF textSize = e.Graphics.MeasureString(text, font);
+
+            float centerX = refreshPictureBox.Width / 2f;
+            float centerY = refreshPictureBox.Height / 2f;
+
+            e.Graphics.TranslateTransform(centerX, centerY);
+            e.Graphics.RotateTransform(refreshRotationAngle);
+            e.Graphics.TranslateTransform(-centerX, -centerY);
+
+            float x = (refreshPictureBox.Width - textSize.Width) / 2f;
+            float y = (refreshPictureBox.Height - textSize.Height) / 2f;
+
+            e.Graphics.DrawString(text, font, brush, x, y);
+
+            e.Graphics.ResetTransform();
+        }
+
+        private void RefreshPictureBox_Click(object? sender, EventArgs e)
+        {
+            refreshRotationAngle = 0f;
+            refreshAnimationTimer.Start();
+
+            SyncRequested?.Invoke(this, EventArgs.Empty);
+        }
         private void StyleRadioButton(RadioButton radioButton)
         {
             radioButton.Font = FontRadio;

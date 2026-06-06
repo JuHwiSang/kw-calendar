@@ -1,4 +1,4 @@
-# 크롤링 자동 스케줄 — crawl_events Edge Function을 주기적으로 호출한다.
+# 크롤링 자동 스케줄 — crawl_events 실행 후 parse_events Edge Function을 호출한다.
 # crawl_events 내부 스로틀(1시간 이내 재실행 방지)이 있으므로 중복 수집은 발생하지 않는다.
 #
 # 필요 Variables (Settings → Secrets and variables → Actions):
@@ -12,11 +12,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  crawl:
-    name: Trigger crawl_events
+  crawl-and-parse:
+    name: Trigger crawl_events and parse_events
     runs-on: ubuntu-latest
     steps:
       - name: Call crawl_events Edge Function
         run: |
           curl -fsS -X POST \
             https://${{ vars.SUPABASE_PROJECT_ID }}.supabase.co/functions/v1/crawl_events
+
+      - name: Wait for crawl_events background task
+        run: sleep 60
+
+      - name: Call parse_events Edge Function
+        run: |
+          curl -fsS -X POST \
+            https://${{ vars.SUPABASE_PROJECT_ID }}.supabase.co/functions/v1/parse_events

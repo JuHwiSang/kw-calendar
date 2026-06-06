@@ -4,7 +4,7 @@
 # 필요 Variables (Settings → Secrets and variables → Actions):
 #   - SUPABASE_PROJECT_ID (Variable) — Project Settings → Reference ID
 
-name: Crawl Schedule
+name: Crawl and Parse Schedule
 
 on:
   schedule:

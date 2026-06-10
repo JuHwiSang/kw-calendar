@@ -19,6 +19,8 @@ jobs:
       - name: Call crawl_events Edge Function
         run: |
           curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
             https://${{ vars.SUPABASE_PROJECT_ID }}.supabase.co/functions/v1/crawl_events
 
       - name: Wait for crawl_events background task
@@ -27,4 +29,6 @@ jobs:
       - name: Call parse_events Edge Function
         run: |
           curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
             https://${{ vars.SUPABASE_PROJECT_ID }}.supabase.co/functions/v1/parse_events

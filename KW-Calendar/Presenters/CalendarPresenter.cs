@@ -77,7 +77,17 @@ public class CalendarPresenter
 
 
     private async void OnSyncRequested(object? sender, EventArgs e)
-       => await SyncAndRefreshAsync();
+    {
+        try
+        {
+            await SyncAndRefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"동기화 중 오류가 발생했습니다.\n{ex.Message}",
+                "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
 
     // --- 즐겨찾기 ---
 

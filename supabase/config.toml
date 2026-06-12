@@ -416,3 +416,9 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/deno.json"
 entrypoint = "./functions/crawl_events/index.ts"
+
+[functions.parse_events]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"
+entrypoint = "./functions/parse_events/index.ts"

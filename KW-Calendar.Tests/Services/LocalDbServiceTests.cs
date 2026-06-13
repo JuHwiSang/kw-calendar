@@ -140,6 +140,95 @@ public class LocalDbServiceTests : IDisposable
         Assert.False(second);
     }
 
+    // --- User Events ---
+
+    [Fact]
+    public async Task AddUserEvent_AssignsNegativeId_AndSetsFlagsTrue()
+    {
+        var ev = new Event { Title = "My Event", StartDt = new DateTime(2026, 6, 1), CategoryId = 1 };
+        await _sut.AddUserEventAsync(ev);
+
+        var all = await _sut.GetEventsByDateRangeAsync(DateTime.MinValue, DateTime.MaxValue);
+        var added = Assert.Single(all);
+        Assert.True(added.Id < 0);
+        Assert.True(added.IsFavorited);
+        Assert.True(added.IsUserAdded);
+    }
+
+    [Fact]
+    public async Task AddUserEvent_MultipleEvents_IdsDecrement()
+    {
+        var ev1 = new Event { Title = "First", StartDt = new DateTime(2026, 6, 1), CategoryId = 1 };
+        var ev2 = new Event { Title = "Second", StartDt = new DateTime(2026, 6, 2), CategoryId = 1 };
+        await _sut.AddUserEventAsync(ev1);
+        await _sut.AddUserEventAsync(ev2);
+
+        var all = await _sut.GetEventsByDateRangeAsync(DateTime.MinValue, DateTime.MaxValue);
+        var ids = all.Select(e => e.Id).OrderBy(id => id).ToList();
+        Assert.Equal(2, ids.Count);
+        Assert.Equal(ids[0] + 1, ids[1]);
+    }
+
+    [Fact]
+    public async Task DeleteUserEvent_RemovesRow()
+    {
+        var ev = new Event { Title = "To Delete", StartDt = new DateTime(2026, 6, 1), CategoryId = 1 };
+        await _sut.AddUserEventAsync(ev);
+        var added = (await _sut.GetEventsByDateRangeAsync(DateTime.MinValue, DateTime.MaxValue)).Single();
+
+        await _sut.DeleteUserEventAsync(added.Id);
+
+        var result = await _sut.GetEventByIdAsync(added.Id);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task DeleteUserEvent_ThrowsForServerEvent()
+    {
+        await _sut.UpsertEventsAsync([MakeEvent(1, "Server Event")]);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _sut.DeleteUserEventAsync(1));
+    }
+
+    [Fact]
+    public async Task UpdateUserEvent_UpdatesEditableFields()
+    {
+        var ev = new Event { Title = "Original", StartDt = new DateTime(2026, 6, 1), CategoryId = 1 };
+        await _sut.AddUserEventAsync(ev);
+        var added = (await _sut.GetEventsByDateRangeAsync(DateTime.MinValue, DateTime.MaxValue)).Single();
+
+        var updated = new Event
+        {
+            Id = added.Id,
+            Title = "Updated",
+            StartDt = new DateTime(2026, 6, 2),
+            EndDt = new DateTime(2026, 6, 3),
+            IsAllDay = true,
+            Body = "new body",
+            CategoryId = 2,
+        };
+        await _sut.UpdateUserEventAsync(updated);
+
+        var result = await _sut.GetEventByIdAsync(added.Id);
+        Assert.NotNull(result);
+        Assert.Equal("Updated", result!.Title);
+        Assert.Equal(new DateTime(2026, 6, 2), result.StartDt);
+        Assert.Equal(new DateTime(2026, 6, 3), result.EndDt);
+        Assert.True(result.IsAllDay);
+        Assert.Equal("new body", result.Body);
+        Assert.Equal(2, result.CategoryId);
+    }
+
+    [Fact]
+    public async Task UpdateUserEvent_ThrowsForServerEvent()
+    {
+        await _sut.UpsertEventsAsync([MakeEvent(1, "Server Event")]);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _sut.UpdateUserEventAsync(MakeEvent(1, "Hacked")));
+    }
+
     // --- Helpers ---
 
     private static Event MakeEvent(int id, string title,
